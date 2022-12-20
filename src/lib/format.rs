@@ -1,15 +1,15 @@
-use crate::*;
 use crate::util::*;
+use crate::*;
 
-use std::num::TryFromIntError;
 use nom::{
-  IResult,
-  branch::alt,
-  multi::many0,
-  sequence::{tuple, terminated},
-  character::complete::{char, line_ending, not_line_ending},
-  combinator::map_res,
+    branch::alt,
+    character::complete::{char, line_ending, not_line_ending},
+    combinator::map_res,
+    multi::many0,
+    sequence::{terminated, tuple},
+    IResult,
 };
+use std::num::TryFromIntError;
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +47,9 @@ fn parse_day(input: &str) -> IResult<&str, Day> {
 }
 
 fn parse_year(input: &str) -> IResult<&str, Year> {
-    map_res(digits, |n| -> Result<Year, TryFromIntError> { n.try_into() })(input)
+    map_res(digits, |n| -> Result<Year, TryFromIntError> {
+        n.try_into()
+    })(input)
 }
 
 fn parse_date(input: &str) -> IResult<&str, time::Date> {
@@ -60,39 +62,42 @@ fn parse_date(input: &str) -> IResult<&str, time::Date> {
             tuple((parse_day, ws(parse_month), parse_year)),
             move |(day, mon, year)| -> Result<time::Date, time::error::ComponentRange> {
                 time::Date::from_calendar_date(year, mon, day)
-            }
+            },
         ),
         map_res(
             tuple((parse_day, ws(parse_month))),
             move |(day, mon)| -> Result<time::Date, time::error::ComponentRange> {
                 time::Date::from_calendar_date(year, mon, day)
-            }
+            },
         ),
     ))(input)
 }
 
 fn parse_reminder(input: &str) -> IResult<&str, Reminder> {
     alt((
-        map_res(parse_weekday, |wday| -> Result<Reminder, ()> { Ok(Reminder::Weekday(wday)) }),
-        map_res(parse_date, |date| -> Result<Reminder, ()> { Ok(Reminder::Date(date)) }),
+        map_res(parse_weekday, |wday| -> Result<Reminder, ()> {
+            Ok(Reminder::Weekday(wday))
+        }),
+        map_res(parse_date, |date| -> Result<Reminder, ()> {
+            Ok(Reminder::Date(date))
+        }),
     ))(input)
 }
 
 fn parse_desc(input: &str) -> IResult<&str, &str> {
-    terminated(
-        not_line_ending,
-        line_ending,
-    )(input)
+    terminated(not_line_ending, line_ending)(input)
 }
 
 fn parse_entry(input: &str) -> IResult<&str, Entry> {
-    let (input, (day, _, desc)) = tuple((
-        parse_reminder,
-        char('\t'),
-        parse_desc,
-    ))(input)?;
+    let (input, (day, _, desc)) = tuple((parse_reminder, char('\t'), parse_desc))(input)?;
 
-    Ok((input, Entry{day, desc: desc.to_string()}))
+    Ok((
+        input,
+        Entry {
+            day,
+            desc: desc.to_string(),
+        },
+    ))
 }
 
 pub fn parse_entries(input: &str) -> IResult<&str, Vec<Entry>> {
@@ -115,16 +120,35 @@ mod tests {
     #[test]
     fn date() {
         let year = time::OffsetDateTime::now_local().unwrap().year();
-        assert_eq!(parse_date("25 Feb"), Ok(("", time::Date::from_calendar_date(year, time::Month::February, 25).unwrap())));
-        assert_eq!(parse_date("12 Dec 1950"), Ok(("", time::Date::from_calendar_date(1950, time::Month::December, 12).unwrap())));
+        assert_eq!(
+            parse_date("25 Feb"),
+            Ok((
+                "",
+                time::Date::from_calendar_date(year, time::Month::February, 25).unwrap()
+            ))
+        );
+        assert_eq!(
+            parse_date("12 Dec 1950"),
+            Ok((
+                "",
+                time::Date::from_calendar_date(1950, time::Month::December, 12).unwrap()
+            ))
+        );
     }
 
     #[test]
     fn reminder() {
-        assert_eq!(parse_reminder("Fri"),
-                   Ok(("", Reminder::Weekday(time::Weekday::Friday))));
-        assert_eq!(parse_reminder("06 July 2020"),
-                   Ok(("", Reminder::Date(time::Date::from_calendar_date(2020, time::Month::July, 6).unwrap()))));
+        assert_eq!(
+            parse_reminder("Fri"),
+            Ok(("", Reminder::Weekday(time::Weekday::Friday)))
+        );
+        assert_eq!(
+            parse_reminder("06 July 2020"),
+            Ok((
+                "",
+                Reminder::Date(time::Date::from_calendar_date(2020, time::Month::July, 6).unwrap())
+            ))
+        );
     }
 
     #[test]
@@ -136,11 +160,15 @@ mod tests {
     fn event() {
         assert_eq!(
             parse_entry("12 Mar 2015\tDo some stuff\n"),
-            Ok(("",
-               Entry{
-                    day: Reminder::Date(time::Date::from_calendar_date(2015, time::Month::March, 12).unwrap()),
+            Ok((
+                "",
+                Entry {
+                    day: Reminder::Date(
+                        time::Date::from_calendar_date(2015, time::Month::March, 12).unwrap()
+                    ),
                     desc: "Do some stuff",
-               }
-            )));
+                }
+            ))
+        );
     }
 }

@@ -4,10 +4,10 @@ extern crate time;
 mod format;
 mod util;
 
-use std::io::{self, Read};
-use std::path;
 use std::convert;
 use std::fs::File;
+use std::io::{self, Read};
+use std::path;
 
 use crate::format::*;
 

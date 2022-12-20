@@ -7,9 +7,7 @@ fn calendar_file() -> Result<path::PathBuf, env::VarError> {
     let home = env::var("HOME")?;
     let path = Path::new(&home);
 
-    Ok(path
-        .join(".ncalendar")
-        .join("calendar"))
+    Ok(path.join(".ncalendar").join("calendar"))
 }
 
 fn main() {
