@@ -36,22 +36,21 @@ struct Opt {
     week: bool,
 }
 
+// For Fridays (if neither -A nor -B was provided) look
+// three days into the future by default (next monday).
+fn forward_default(opt: &Opt) -> impl FnOnce() -> time::Duration {
+    let fri: bool = opt.today.weekday() == time::Weekday::Friday && opt.back.is_none();
+    move || -> time::Duration {
+        time::Duration::days(if fri { 3 } else { 1 })
+    }
+}
+
 fn main() {
     let opt = Opt::from_args();
-
-    // For Fridays (if neither -A nor -B was provided) look
-    // three days into the future by default (next monday).
-    let forward;
-    if opt.today.weekday() == time::Weekday::Friday && opt.forward.is_none() && opt.back.is_none() {
-        forward = time::Duration::days(3);
-    } else {
-        forward = time::Duration::days(1);
-    }
-
     let span = TimeSpan::new(
         opt.today,
         opt.back.unwrap_or(time::Duration::days(0)),
-        opt.forward.unwrap_or(forward),
+        opt.forward.unwrap_or_else(forward_default(&opt)),
     )
     .unwrap();
 
