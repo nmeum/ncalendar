@@ -166,7 +166,7 @@ mod tests {
                     day: Reminder::Date(
                         time::Date::from_calendar_date(2015, time::Month::March, 12).unwrap()
                     ),
-                    desc: "Do some stuff",
+                    desc: "Do some stuff".to_string(),
                 }
             ))
         );
