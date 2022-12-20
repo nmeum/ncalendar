@@ -26,7 +26,11 @@ fn calendar_file() -> Result<path::PathBuf, env::VarError> {
 
 fn main() {
     let opt = Opt::from_args();
-    let fp = calendar_file().unwrap();
+    let fp = if let Some(p) = opt.file {
+        p
+    } else {
+        calendar_file().unwrap()
+    };
 
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
     for entry in entries.iter() {
