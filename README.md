@@ -8,6 +8,17 @@ This is mostly intended as a toy project for experimenting a bit with Rust.
 The implementation is primarily inspired by the [OpenBSD `calendar(1)` implementation](https://man.openbsd.org/calendar) and implements most of its feature.
 However, the input format is not intended to be fully compatible with OpenBSD.
 
+## Features
+
+* Saner and more strict input format compared to the BSD version
+* Re-usable parser for the input format is provided as a Rust library
+    * Allows building additional tools on top
+    * For example, exporters for other formats
+* Lots of great non-features:
+    * No locale support
+    * No support for Julian or Cyrillic calendars
+    * No built-in support for [national holidays][openbsd ostern.c]
+
 ## Installation
 
 This software can be installed using the following commands:
@@ -62,3 +73,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 [time crate threads]: https://github.com/time-rs/time/issues/538
 [cargo defopts]: https://github.com/rust-lang/cargo/issues/8430
 [parser combinators wk]: https://en.wikipedia.org/wiki/Parser_combinator
+[openbsd ostern.c]: https://github.com/openbsd/src/blob/47f32dc2b6cade03c63e7f98f4f715cb45238c6e/usr.bin/calendar/ostern.c
