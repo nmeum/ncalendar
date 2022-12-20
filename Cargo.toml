@@ -1,0 +1,24 @@
+[package]
+name = "ncalendar"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "ncalendar"
+path = "src/lib/mod.rs"
+
+[[bin]]
+name = "ncalendar"
+path = "src/main.rs"
+
+[dependencies]
+nom = "7.1.1"
+time = { version = "0.3.17", features = ["local-offset"] }
+
+# The time crate can not determine the current date with multiple threads.
+# See: https://github.com/time-rs/time/issues/538
+#
+# As such, we just use a single thread for `cargo test`.
+# See: https://github.com/rust-lang/cargo/issues/8430
+[env]
+RUST_TEST_THREADS = "1"
