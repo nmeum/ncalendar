@@ -15,11 +15,3 @@ path = "src/main.rs"
 nom = "7.1.1"
 structopt = "0.3.26"
 time = { version = "0.3.17", features = ["local-offset"] }
-
-# The time crate can not determine the current date with multiple threads.
-# See: https://github.com/time-rs/time/issues/538
-#
-# As such, we just use a single thread for `cargo test`.
-# See: https://github.com/rust-lang/cargo/issues/8430
-[env]
-RUST_TEST_THREADS = "1"
