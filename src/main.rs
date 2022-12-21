@@ -59,7 +59,7 @@ fn main() {
 
         if let Some(date) = span.match_reminder(entry.day) {
             if opt.week {
-                print!("{} ", date.weekday().to_string().get(0..3).unwrap());
+                print!("{} ", weekday_short(date));
             }
             println!(
                 "{}{}\t{}",

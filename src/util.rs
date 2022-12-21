@@ -2,6 +2,14 @@ use std::env;
 use std::path::{self, Path};
 use time::macros::format_description;
 
+pub fn weekday_short(date: time::Date) -> String {
+    let w = date.weekday();
+
+    // Every weekday is at least three characters long.
+    // Hence, the .get() invocation should never panic.
+    w.to_string().get(0..3).unwrap().to_string()
+}
+
 pub fn calendar_file() -> Result<path::PathBuf, env::VarError> {
     let home = env::var("HOME")?;
     let path = Path::new(&home);
