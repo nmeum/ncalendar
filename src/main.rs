@@ -14,9 +14,10 @@ use time::format_description;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "basic")]
 struct Opt {
+    // XXX: Should this use try_from_os_str?!
     /// Use the given file as the default calendar file.
-    #[structopt(short = "f", parse(from_os_str))]
-    file: Option<path::PathBuf>,
+    #[structopt(short = "f", parse(try_from_str = parse_file))]
+    file: path::PathBuf,
 
     /// Amount of next days to consider.
     #[structopt(short = "A", parse(try_from_str = parse_days))]
@@ -37,12 +38,6 @@ struct Opt {
 
 fn main() {
     let opt = Opt::from_args();
-    let fp = if let Some(p) = opt.file {
-        p
-    } else {
-        calendar_file().unwrap()
-    };
-
     let today = if let Some(t) = opt.today {
         t
     } else {
@@ -66,7 +61,7 @@ fn main() {
     .unwrap();
 
     let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
-    let entries = ncalendar::parse_file(fp.as_path()).unwrap();
+    let entries = ncalendar::parse_file(opt.file.as_path()).unwrap();
     for entry in entries {
         let postfix = if entry.is_reoccuring() { '*' } else { ' ' };
 

@@ -18,6 +18,14 @@ pub fn calendar_file() -> Result<path::PathBuf, env::VarError> {
     Ok(path.join(".ncalendar").join("calendar"))
 }
 
+pub fn parse_file(input: &str) -> Result<path::PathBuf, env::VarError> {
+    if input.is_empty() {
+        calendar_file()
+    } else {
+        Ok(input.into())
+    }
+}
+
 pub fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
     let fmt = format_description!("[day][month][year]");
     time::Date::parse(input, &fmt)
