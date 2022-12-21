@@ -4,7 +4,6 @@ extern crate structopt;
 mod timespan;
 
 use crate::timespan::TimeSpan;
-use ncalendar::Reminder;
 use std::env;
 use std::path::{self, Path};
 use structopt::StructOpt;
@@ -63,24 +62,9 @@ fn main() {
 
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
     for entry in entries {
-        let date = match entry.day {
-            Reminder::Weekday(w) => {
-                if let Some(d) = span.find_weekday(w) {
-                    d
-                } else {
-                    continue
-                }
-            },
-            Reminder::Date(d) => {
-                if !span.contains(d) {
-                    continue
-                } else {
-                    d
-                }
-            }
-        };
-
-        println!("{}\t{}", date, entry.desc);
+        if let Some(date) = span.match_reminder(entry.day) {
+            println!("{}\t{}", date, entry.desc);
+        }
     }
 }
 

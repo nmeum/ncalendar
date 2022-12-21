@@ -1,3 +1,5 @@
+use ncalendar::Reminder;
+
 /// Represents a time span between two dates.
 pub struct TimeSpan {
     start: time::Date,
@@ -12,7 +14,7 @@ impl TimeSpan {
         Some(TimeSpan { start, end })
     }
 
-    pub fn contains(&self, d: time::Date) -> bool {
+    pub fn contains_date(&self, d: time::Date) -> bool {
         d >= self.start && d <= self.end
     }
 
@@ -40,6 +42,27 @@ impl TimeSpan {
 
         None
     }
+
+    /// Check if the given reminder is matched by the time span and
+    /// if so return the first date in the time span that matches it.
+    pub fn match_reminder(&self, r: Reminder) -> Option<time::Date> {
+        match r {
+            Reminder::Weekday(w) => {
+                if let Some(d) = self.find_weekday(w) {
+                    Some(d)
+                } else {
+                    None
+                }
+            }
+            Reminder::Date(d) => {
+                if !self.contains_date(d) {
+                    None
+                } else {
+                    Some(d)
+                }
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -51,16 +74,16 @@ mod tests {
     use time::Duration;
 
     #[test]
-    fn contains() {
+    fn contains_date() {
         let t = TimeSpan::new(date!(2022 - 12 - 20), Duration::days(5), Duration::days(4)).unwrap();
 
         // Lower bound: 15th of December 2022
-        assert!(t.contains(date!(2022 - 12 - 15)));
-        assert!(!t.contains(date!(2022 - 12 - 14)));
+        assert!(t.contains_date(date!(2022 - 12 - 15)));
+        assert!(!t.contains_date(date!(2022 - 12 - 14)));
 
         // Upper bound: 24th of December 2022
-        assert!(t.contains(date!(2022 - 12 - 24)));
-        assert!(!t.contains(date!(2022 - 12 - 25)));
+        assert!(t.contains_date(date!(2022 - 12 - 24)));
+        assert!(!t.contains_date(date!(2022 - 12 - 25)));
     }
 
     #[test]
@@ -70,10 +93,22 @@ mod tests {
 
         let t = TimeSpan::new(d, Duration::days(0), Duration::days(3)).unwrap();
         assert_eq!(t.find_weekday(time::Weekday::Monday), None);
-        assert_eq!(t.find_weekday(time::Weekday::Tuesday), Some(date!(2000 - 06 - 13)));
-        assert_eq!(t.find_weekday(time::Weekday::Wednesday), Some(date!(2000 - 06 - 14)));
-        assert_eq!(t.find_weekday(time::Weekday::Thursday), Some(date!(2000 - 06 - 15)));
-        assert_eq!(t.find_weekday(time::Weekday::Friday), Some(date!(2000 - 06 - 16)));
+        assert_eq!(
+            t.find_weekday(time::Weekday::Tuesday),
+            Some(date!(2000 - 06 - 13))
+        );
+        assert_eq!(
+            t.find_weekday(time::Weekday::Wednesday),
+            Some(date!(2000 - 06 - 14))
+        );
+        assert_eq!(
+            t.find_weekday(time::Weekday::Thursday),
+            Some(date!(2000 - 06 - 15))
+        );
+        assert_eq!(
+            t.find_weekday(time::Weekday::Friday),
+            Some(date!(2000 - 06 - 16))
+        );
         assert_eq!(t.find_weekday(time::Weekday::Saturday), None);
         assert_eq!(t.find_weekday(time::Weekday::Sunday), None);
     }
