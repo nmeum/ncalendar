@@ -5,6 +5,7 @@ mod format;
 mod util;
 
 use std::convert;
+use std::fmt;
 use std::fs::File;
 use std::io::{self, Read};
 use std::path;
@@ -24,12 +25,27 @@ pub enum Reminder {
     Date(time::Date),
 }
 
+impl fmt::Display for Reminder {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Reminder::Weekday(wday) => write!(f, "{}", wday),
+            Reminder::Date(date) => write!(f, "{}", date),
+        }
+    }
+}
+
 /// Represents a single appointment from the calendar file.
 #[derive(Debug, PartialEq)]
 pub struct Entry {
     pub day: Reminder,
     pub desc: String,
     //pub time: time::Time,
+}
+
+impl fmt::Display for Entry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}\t{}", self.day, self.desc)
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
