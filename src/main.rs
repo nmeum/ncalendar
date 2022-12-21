@@ -1,6 +1,9 @@
 extern crate ncalendar;
 extern crate structopt;
 
+mod timespan;
+
+use crate::timespan::TimeSpan;
 use ncalendar::{Entry, Reminder};
 use std::env;
 use std::path::{self, Path};
@@ -25,47 +28,6 @@ struct Opt {
     /// Act like the specified value is today.
     #[structopt(short = "t", parse(try_from_str = parse_today))]
     today: Option<time::Date>,
-}
-
-/// Represents a time span between two dates.
-struct TimeSpan {
-    start: time::Date,
-    end: time::Date,
-}
-
-impl TimeSpan {
-    pub fn new(day: time::Date, back: time::Duration, forward: time::Duration) -> Option<Self> {
-        let start = day.checked_sub(back)?;
-        let end = day.checked_add(forward)?;
-
-        Some(TimeSpan { start, end })
-    }
-
-    pub fn contains(&self, d: time::Date) -> bool {
-        d >= self.start && d <= self.end
-    }
-
-    pub fn contains_week(&self, w: time::Weekday) -> bool {
-        let mut date = self.start;
-
-        // Assume weekdays repeat every seven days.
-        let mut days = 0;
-        while days < 7 && date <= self.end {
-            match date.checked_add(time::Duration::days(days)) {
-                Some(ndate) => {
-                    date = ndate;
-                    if date.weekday() == w {
-                        return true;
-                    }
-                }
-                None => return false,
-            }
-
-            days += 1
-        }
-
-        false
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////
