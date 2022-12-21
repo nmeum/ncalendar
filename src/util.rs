@@ -1,4 +1,5 @@
 use std::env;
+use std::num::ParseIntError;
 use std::path::{self, Path};
 use time::macros::format_description;
 
@@ -20,6 +21,11 @@ pub fn calendar_file() -> Result<path::PathBuf, env::VarError> {
 pub fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
     let fmt = format_description!("[day][month][year]");
     time::Date::parse(input, &fmt)
+}
+
+pub fn parse_days(days: &str) -> Result<time::Duration, ParseIntError> {
+    let days = days.parse::<u32>()?;
+    Ok(time::Duration::days(days.into()))
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -19,12 +19,12 @@ struct Opt {
     file: Option<path::PathBuf>,
 
     /// Amount of next days to consider.
-    #[structopt(short = "A", default_value = "1")]
-    forward: u32,
+    #[structopt(short = "A", default_value = "1", parse(try_from_str = parse_days))]
+    forward: time::Duration,
 
     /// Amount of past days to consider.
-    #[structopt(short = "B", default_value = "0")]
-    back: u32,
+    #[structopt(short = "B", default_value = "0", parse(try_from_str = parse_days))]
+    back: time::Duration,
 
     /// Act like the specified value is today.
     #[structopt(short = "t", parse(try_from_str = parse_today))]
@@ -48,9 +48,7 @@ fn main() {
     } else {
         time::OffsetDateTime::now_local().unwrap().date()
     };
-    let backward = time::Duration::days(opt.back.into());
-    let forward = time::Duration::days(opt.forward.into());
-    let span = TimeSpan::new(today, backward, forward).unwrap();
+    let span = TimeSpan::new(today, opt.back, opt.forward).unwrap();
 
     let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
