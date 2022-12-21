@@ -27,8 +27,12 @@ pub fn parse_file(input: &str) -> Result<path::PathBuf, env::VarError> {
 }
 
 pub fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
-    let fmt = format_description!("[day][month][year]");
-    time::Date::parse(input, &fmt)
+    if input.is_empty() {
+        Ok(time::OffsetDateTime::now_local().unwrap().date())
+    } else {
+        let fmt = format_description!("[day][month][year]");
+        time::Date::parse(input, &fmt)
+    }
 }
 
 pub fn parse_days(days: &str) -> Result<time::Duration, ParseIntError> {

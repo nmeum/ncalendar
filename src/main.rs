@@ -29,7 +29,7 @@ struct Opt {
 
     /// Act like the specified value is today.
     #[structopt(short = "t", parse(try_from_str = parse_today))]
-    today: Option<time::Date>,
+    today: time::Date,
 
     /// Print day of the week name in front of each event.
     #[structopt(short = "w")]
@@ -38,23 +38,18 @@ struct Opt {
 
 fn main() {
     let opt = Opt::from_args();
-    let today = if let Some(t) = opt.today {
-        t
-    } else {
-        time::OffsetDateTime::now_local().unwrap().date()
-    };
 
     // For Fridays (if neither -A nor -B was provided) look
     // three days into the future by default (next monday).
     let forward;
-    if today.weekday() == time::Weekday::Friday && opt.forward.is_none() && opt.back.is_none() {
+    if opt.today.weekday() == time::Weekday::Friday && opt.forward.is_none() && opt.back.is_none() {
         forward = time::Duration::days(3);
     } else {
         forward = time::Duration::days(1);
     }
 
     let span = TimeSpan::new(
-        today,
+        opt.today,
         opt.back.unwrap_or(time::Duration::days(0)),
         opt.forward.unwrap_or(forward),
     )
