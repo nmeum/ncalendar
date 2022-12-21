@@ -5,6 +5,7 @@ use ncalendar::{Entry, Reminder};
 use std::env;
 use std::path::{self, Path};
 use structopt::StructOpt;
+use time::macros::format_description;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "basic")]
@@ -20,6 +21,10 @@ struct Opt {
     /// Amonut of past days to consider.
     #[structopt(short = "B", default_value = "0")]
     back: u32,
+
+    /// Act like the specified value is today.
+    #[structopt(short = "t", parse(try_from_str = parse_today))]
+    today: Option<time::Date>,
 }
 
 /// Represents a time span between two dates.
@@ -72,6 +77,11 @@ fn calendar_file() -> Result<path::PathBuf, env::VarError> {
     Ok(path.join(".ncalendar").join("calendar"))
 }
 
+fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
+    let fmt = format_description!("[day][month][year]");
+    time::Date::parse(input, &fmt)
+}
+
 fn matches(t: &TimeSpan, e: &Entry) -> bool {
     match e.day {
         Reminder::Weekday(wday) => t.contains_week(wday),
@@ -87,7 +97,11 @@ fn main() {
         calendar_file().unwrap()
     };
 
-    let today = time::OffsetDateTime::now_local().unwrap().date();
+    let today = if let Some(t) = opt.today {
+        t
+    } else {
+        time::OffsetDateTime::now_local().unwrap().date()
+    };
     let backward = time::Duration::days(opt.back.into());
     let forward = time::Duration::days(opt.forward.into());
     let span = TimeSpan::new(today, backward, forward).unwrap();
@@ -98,5 +112,19 @@ fn main() {
     // TODO: Filter entries using the matches method below and then print them.
     for entry in filtered {
         println!("Entry: {:?} - {:?}", entry.day, entry.desc);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time::macros::date;
+
+    #[test]
+    fn today_parser() {
+        assert_eq!(parse_today("02012022"), Ok(date!(2022 - 01 - 02)));
+        assert_eq!(parse_today("12122000"), Ok(date!(2000 - 12 - 12)));
     }
 }
