@@ -4,7 +4,7 @@ use crate::*;
 use nom::{
     branch::alt,
     character::complete::{char, line_ending, not_line_ending},
-    combinator::map_res,
+    combinator::{map_res, opt},
     multi::many0,
     sequence::{terminated, tuple},
     IResult,
@@ -59,21 +59,15 @@ fn parse_date(input: &str) -> IResult<&str, time::Date> {
 
     alt((
         map_res(
-            tuple((parse_day, ws(parse_month), parse_year)),
-            move |(day, mon, year)| -> Result<time::Date, time::error::ComponentRange> {
-                time::Date::from_calendar_date(year, mon, day)
+            tuple((parse_day, ws(parse_month), opt(parse_year))),
+            move |(day, mon, y)| -> Result<time::Date, time::error::ComponentRange> {
+                time::Date::from_calendar_date(y.unwrap_or(year), mon, day)
             },
         ),
         map_res(
-            tuple((parse_day, ws(parse_month))),
-            move |(day, mon)| -> Result<time::Date, time::error::ComponentRange> {
-                time::Date::from_calendar_date(year, mon, day)
-            },
-        ),
-        map_res(
-            parse_month,
-            move |mon| -> Result<time::Date, time::error::ComponentRange> {
-                time::Date::from_calendar_date(year, mon, 01)
+            tuple((parse_month, opt(ws(parse_year)))),
+            move |(mon, y)| -> Result<time::Date, time::error::ComponentRange> {
+                time::Date::from_calendar_date(y.unwrap_or(year), mon, 01)
             },
         ),
     ))(input)
@@ -142,6 +136,7 @@ mod tests {
                 time::Date::from_calendar_date(year, time::Month::December, 01).unwrap()
             ))
         );
+        assert_eq!(parse_date("Jan 1990"), Ok(("", date!(1990 - 01 - 01))));
     }
 
     #[test]
