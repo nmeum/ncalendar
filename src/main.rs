@@ -28,6 +28,10 @@ struct Opt {
     /// Act like the specified value is today.
     #[structopt(short = "t", parse(try_from_str = parse_today))]
     today: Option<time::Date>,
+
+    /// Print day of the week name in front of each event.
+    #[structopt(short = "w")]
+    week: bool,
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -61,7 +65,7 @@ fn main() {
     let forward = time::Duration::days(opt.forward.into());
     let span = TimeSpan::new(today, backward, forward).unwrap();
 
-    let outfmt = format_description::parse("[month repr:short] [day]").unwrap();
+    let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
     for entry in entries {
         let postfix = if entry.is_reoccuring() {
@@ -71,7 +75,10 @@ fn main() {
         };
 
         if let Some(date) = span.match_reminder(entry.day) {
-            println!("{}{}\t{}", date.format(&outfmt).unwrap(), postfix, entry.desc);
+            if opt.week {
+                print!("{} ", date.weekday().to_string().get(0..3).unwrap());
+            }
+            println!("{}{}\t{}", date.format(&out_fmt).unwrap(), postfix, entry.desc);
         }
     }
 }
