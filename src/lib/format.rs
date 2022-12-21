@@ -109,6 +109,7 @@ pub fn parse_entries(input: &str) -> IResult<&str, Vec<Entry>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use time::macros::date;
 
     #[test]
     fn weekday() {
@@ -131,7 +132,7 @@ mod tests {
             parse_date("12 Dec 1950"),
             Ok((
                 "",
-                time::Date::from_calendar_date(1950, time::Month::December, 12).unwrap()
+                date!(1950 - 12 - 12)
             ))
         );
     }
@@ -146,7 +147,7 @@ mod tests {
             parse_reminder("06 July 2020"),
             Ok((
                 "",
-                Reminder::Date(time::Date::from_calendar_date(2020, time::Month::July, 6).unwrap())
+                Reminder::Date(date!(2020 - 07 - 06))
             ))
         );
     }
@@ -163,9 +164,7 @@ mod tests {
             Ok((
                 "",
                 Entry {
-                    day: Reminder::Date(
-                        time::Date::from_calendar_date(2015, time::Month::March, 12).unwrap()
-                    ),
+                    day: Reminder::Date(date!(2015 - 03 - 12)),
                     desc: "Do some stuff".to_string(),
                 }
             ))
