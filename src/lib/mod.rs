@@ -43,17 +43,40 @@ impl Entry {
 
 ////////////////////////////////////////////////////////////////////////
 
-pub fn parse_file<'a, P: convert::AsRef<path::Path>>(fp: P) -> io::Result<Vec<Entry>> {
+#[derive(Debug)]
+pub enum Error {
+    IncompleteParse,
+    ParsingError(String, nom::error::ErrorKind),
+    IoError(io::Error),
+}
+
+impl From<nom::Err<nom::error::Error<&str>>> for Error {
+    fn from(e: nom::Err<nom::error::Error<&str>>) -> Self {
+        match e {
+            nom::Err::Incomplete(_) => Error::IncompleteParse,
+            nom::Err::Error(e) | nom::Err::Failure(e) => {
+                Error::ParsingError(e.input.to_string(), e.code)
+            }
+        }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Error::IoError(e)
+    }
+}
+
+pub fn parse_file<'a, P: convert::AsRef<path::Path>>(fp: P) -> Result<Vec<Entry>, Error> {
     let mut f = File::open(fp)?;
 
     let mut buf = String::new();
     f.read_to_string(&mut buf)?;
 
-    // TODO: error handling
-    let (input, entries) = parse_entries(&buf).unwrap();
+    let (input, entries) = parse_entries(&buf)?;
     if input != "" {
-        // TODO: handle incomplete parse
+        Err(Error::IncompleteParse)
+    } else {
+        Ok(entries)
     }
-
-    Ok(entries)
 }
