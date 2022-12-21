@@ -70,6 +70,12 @@ fn parse_date(input: &str) -> IResult<&str, time::Date> {
                 time::Date::from_calendar_date(year, mon, day)
             },
         ),
+        map_res(
+            parse_month,
+            move |mon| -> Result<time::Date, time::error::ComponentRange> {
+                time::Date::from_calendar_date(year, mon, 01)
+            },
+        ),
     ))(input)
 }
 
@@ -128,11 +134,12 @@ mod tests {
                 time::Date::from_calendar_date(year, time::Month::February, 25).unwrap()
             ))
         );
+        assert_eq!(parse_date("12 Dec 1950"), Ok(("", date!(1950 - 12 - 12))));
         assert_eq!(
-            parse_date("12 Dec 1950"),
+            parse_date("Dec"),
             Ok((
                 "",
-                date!(1950 - 12 - 12)
+                time::Date::from_calendar_date(year, time::Month::December, 01).unwrap()
             ))
         );
     }
@@ -145,10 +152,7 @@ mod tests {
         );
         assert_eq!(
             parse_reminder("06 July 2020"),
-            Ok((
-                "",
-                Reminder::Date(date!(2020 - 07 - 06))
-            ))
+            Ok(("", Reminder::Date(date!(2020 - 07 - 06))))
         );
     }
 
