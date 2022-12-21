@@ -39,6 +39,28 @@ impl TimeSpan {
     pub fn contains(&self, d: time::Date) -> bool {
         d >= self.start && d <= self.end
     }
+
+    pub fn contains_week(&self, w: time::Weekday) -> bool {
+        let mut date = self.start;
+
+        // Assume weekdays repeat every seven days.
+        let mut days = 0;
+        while days < 7 && date <= self.end {
+            match date.checked_add(time::Duration::days(days)) {
+                Some(ndate) => {
+                    date = ndate;
+                    if date.weekday() == w {
+                        return true;
+                    }
+                }
+                None => return false,
+            }
+
+            days += 1
+        }
+
+        false
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -50,14 +72,9 @@ fn calendar_file() -> Result<path::PathBuf, env::VarError> {
     Ok(path.join(".ncalendar").join("calendar"))
 }
 
-/// Check if entry matches for the given date (assume today for now).
 fn matches(t: &TimeSpan, e: &Entry) -> bool {
     match e.day {
-        Reminder::Weekday(_wday) => {
-            // TODO: Requires reasoning about WeekDay + 1
-            // but time doesn't implement Ord or PartialOrd.
-            false
-        }
+        Reminder::Weekday(wday) => t.contains_week(wday),
         Reminder::Date(date) => t.contains(date),
     }
 }
