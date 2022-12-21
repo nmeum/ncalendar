@@ -22,7 +22,7 @@ struct Opt {
     #[structopt(short = "A", default_value = "1")]
     forward: u32,
 
-    /// Amonut of past days to consider.
+    /// Amount of past days to consider.
     #[structopt(short = "B", default_value = "0")]
     back: u32,
 
