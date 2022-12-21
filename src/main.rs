@@ -14,11 +14,11 @@ struct Opt {
     file: Option<path::PathBuf>,
 
     /// Amount of next days to consider.
-    #[structopt(short = "a", default_value = "1")]
+    #[structopt(short = "A", default_value = "1")]
     forward: u32,
 
     /// Amonut of past days to consider.
-    #[structopt(short = "b", default_value = "0")]
+    #[structopt(short = "B", default_value = "0")]
     back: u32,
 }
 
