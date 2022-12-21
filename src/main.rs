@@ -73,7 +73,7 @@ fn main() {
 
     // TODO: Filter entries using the matches method below and then print them.
     for entry in filtered {
-        println!("{}", entry);
+        println!("Entry: {:?} - {:?}", entry.day, entry.desc);
     }
 }
 
