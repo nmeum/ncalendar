@@ -2,12 +2,13 @@ extern crate ncalendar;
 extern crate structopt;
 
 mod timespan;
+mod util;
 
 use crate::timespan::TimeSpan;
-use std::env;
-use std::path::{self, Path};
+use crate::util::*;
+
+use std::path;
 use structopt::StructOpt;
-use time::macros::format_description;
 use time::format_description;
 
 #[derive(StructOpt, Debug)]
@@ -34,20 +35,6 @@ struct Opt {
     week: bool,
 }
 
-////////////////////////////////////////////////////////////////////////
-
-fn calendar_file() -> Result<path::PathBuf, env::VarError> {
-    let home = env::var("HOME")?;
-    let path = Path::new(&home);
-
-    Ok(path.join(".ncalendar").join("calendar"))
-}
-
-fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
-    let fmt = format_description!("[day][month][year]");
-    time::Date::parse(input, &fmt)
-}
-
 fn main() {
     let opt = Opt::from_args();
     let fp = if let Some(p) = opt.file {
@@ -68,31 +55,18 @@ fn main() {
     let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
     for entry in entries {
-        let postfix = if entry.is_reoccuring() {
-            '*'
-        } else {
-            ' '
-        };
+        let postfix = if entry.is_reoccuring() { '*' } else { ' ' };
 
         if let Some(date) = span.match_reminder(entry.day) {
             if opt.week {
                 print!("{} ", date.weekday().to_string().get(0..3).unwrap());
             }
-            println!("{}{}\t{}", date.format(&out_fmt).unwrap(), postfix, entry.desc);
+            println!(
+                "{}{}\t{}",
+                date.format(&out_fmt).unwrap(),
+                postfix,
+                entry.desc
+            );
         }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use time::macros::date;
-
-    #[test]
-    fn today_parser() {
-        assert_eq!(parse_today("02012022"), Ok(date!(2022 - 01 - 02)));
-        assert_eq!(parse_today("12122000"), Ok(date!(2000 - 12 - 12)));
     }
 }
