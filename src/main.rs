@@ -15,13 +15,11 @@ struct Opt {
 
     /// Amount of next days to consider.
     #[structopt(short = "a", default_value = "1")]
-    num: u32,
-}
+    forward: u32,
 
-#[derive(PartialEq)]
-enum Direction {
-    Future,
-    Past,
+    /// Amonut of past days to consider.
+    #[structopt(short = "b", default_value = "0")]
+    back: u32,
 }
 
 /// Represents a time span between two dates.
@@ -31,12 +29,9 @@ struct TimeSpan {
 }
 
 impl TimeSpan {
-    pub fn new(day: time::Date, dur: time::Duration, dir: Direction) -> Option<Self> {
-        let (start, end) = if dir == Direction::Future {
-            (day, day.checked_add(dur)?)
-        } else {
-            (day.checked_sub(dur)?, day)
-        };
+    pub fn new(day: time::Date, back: time::Duration, forward: time::Duration) -> Option<Self> {
+        let start = day.checked_sub(back)?;
+        let end = day.checked_add(forward)?;
 
         Some(TimeSpan { start, end })
     }
@@ -76,8 +71,9 @@ fn main() {
     };
 
     let today = time::OffsetDateTime::now_local().unwrap().date();
-    let duration = time::Duration::days(opt.num.into());
-    let span = TimeSpan::new(today, duration, Direction::Future).unwrap();
+    let backward = time::Duration::days(opt.back.into());
+    let forward = time::Duration::days(opt.forward.into());
+    let span = TimeSpan::new(today, backward, forward).unwrap();
 
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
     let filtered = entries.iter().filter(|entry| matches(&span, entry));
