@@ -36,7 +36,7 @@ The `ncalendar(1)` program reads calendar entries from the file `~/.ncalendar/ca
 The input format for this file is "documented" through [parser combinators][parser combinators wk] in `src/lib/format.rs`.
 When invoked, all calendar entries which match a certain time span are written to standard output.
 By default, entries for the current and the next day are printed.
-The time span can be configured, via the `-B` (backward), `-F` (forward) and `-t` (set different current date) command-line options an.
+The time span can be configured, via the `-B` (backward), `-A` (forward) and `-t` (set different current date) command-line options an.
 For example:
 
     $ ncalendar -B 3 -A 11 -t 20122022
