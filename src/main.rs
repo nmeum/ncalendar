@@ -28,7 +28,7 @@ struct Opt {
     back: Option<time::Duration>,
 
     /// Act like the specified value is today.
-    #[structopt(short = "t", parse(try_from_str = parse_today))]
+    #[structopt(short = "t", default_value = "today", parse(try_from_str = parse_today))]
     today: time::Date,
 
     /// Print day of the week name in front of each event.
@@ -40,9 +40,7 @@ struct Opt {
 // three days into the future by default (next monday).
 fn forward_default(opt: &Opt) -> impl FnOnce() -> time::Duration {
     let fri: bool = opt.today.weekday() == time::Weekday::Friday && opt.back.is_none();
-    move || -> time::Duration {
-        time::Duration::days(if fri { 3 } else { 1 })
-    }
+    move || -> time::Duration { time::Duration::days(if fri { 3 } else { 1 }) }
 }
 
 fn main() {

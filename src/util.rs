@@ -27,7 +27,7 @@ pub fn parse_file(input: &str) -> Result<path::PathBuf, env::VarError> {
 }
 
 pub fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
-    if input.is_empty() {
+    if input == "today" {
         Ok(time::OffsetDateTime::now_local().unwrap().date())
     } else {
         let fmt = format_description!("[day][month][year]");
