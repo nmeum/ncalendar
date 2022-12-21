@@ -2,7 +2,6 @@
     * Don't unwrap on parser error in lib?
     * Don't use unwrap everywhere in binary?
 * Multiline descriptions (see OpenBSD man page)
-* Special handling for Fridays
 * Implement pre-processing with `cpp(1)`
 * Support wildcards (`*`) in input format, e.g.:
     * Any date of a month

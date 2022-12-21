@@ -19,12 +19,12 @@ struct Opt {
     file: Option<path::PathBuf>,
 
     /// Amount of next days to consider.
-    #[structopt(short = "A", default_value = "1", parse(try_from_str = parse_days))]
-    forward: time::Duration,
+    #[structopt(short = "A", parse(try_from_str = parse_days))]
+    forward: Option<time::Duration>,
 
     /// Amount of past days to consider.
-    #[structopt(short = "B", default_value = "0", parse(try_from_str = parse_days))]
-    back: time::Duration,
+    #[structopt(short = "B", parse(try_from_str = parse_days))]
+    back: Option<time::Duration>,
 
     /// Act like the specified value is today.
     #[structopt(short = "t", parse(try_from_str = parse_today))]
@@ -48,7 +48,22 @@ fn main() {
     } else {
         time::OffsetDateTime::now_local().unwrap().date()
     };
-    let span = TimeSpan::new(today, opt.back, opt.forward).unwrap();
+
+    // For Fridays (if neither -A nor -B was provided) look
+    // three days into the future by default (next monday).
+    let forward;
+    if today.weekday() == time::Weekday::Friday && opt.forward.is_none() && opt.back.is_none() {
+        forward = time::Duration::days(3);
+    } else {
+        forward = time::Duration::days(1);
+    }
+
+    let span = TimeSpan::new(
+        today,
+        opt.back.unwrap_or(time::Duration::days(0)),
+        opt.forward.unwrap_or(forward),
+    )
+    .unwrap();
 
     let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
