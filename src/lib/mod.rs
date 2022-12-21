@@ -32,6 +32,15 @@ pub struct Entry {
     //pub time: time::Time,
 }
 
+impl Entry {
+    pub fn is_reoccuring(&self) -> bool {
+        match self.day {
+            Reminder::Weekday(_) => true,
+            _ => false,
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 pub fn parse_file<'a, P: convert::AsRef<path::Path>>(fp: P) -> io::Result<Vec<Entry>> {

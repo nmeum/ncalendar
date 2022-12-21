@@ -64,8 +64,14 @@ fn main() {
     let outfmt = format_description::parse("[month repr:short] [day]").unwrap();
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
     for entry in entries {
+        let postfix = if entry.is_reoccuring() {
+            '*'
+        } else {
+            ' '
+        };
+
         if let Some(date) = span.match_reminder(entry.day) {
-            println!("{}\t{}", date.format(&outfmt).unwrap(), entry.desc);
+            println!("{}{}\t{}", date.format(&outfmt).unwrap(), postfix, entry.desc);
         }
     }
 }
