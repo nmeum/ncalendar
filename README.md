@@ -10,11 +10,28 @@ However, the input format is not intended to be fully compatible with OpenBSD.
 
 ## Installation
 
-TODO.
+This software can be installed using the following commands:
+
+    $ git clone git://git.8pit.net/ncalendar.git
+    $ cd ncalendar
+    $ cargo install --path .
+
+This will drop the `ncalendar` binary into `~/.cargo/bin`.
+Make sure that directory is in your `$PATH`.
 
 ## Usage
 
-TODO.
+The `ncalendar(1)` program reads calendar entries from the file `~/.ncalendar/calendar` by default.
+The input format for this file is "documented" through [parser combinators][parser combinators wk] in `src/lib/format.rs`.
+When invoked, all calendar entries which match a certain time span are written to standard output.
+By default, entries for the current and the next day are printed.
+The time span can be configured, via the `-B` (backward), `-F` (forward) and `-t` (set different current date) command-line options an.
+For example:
+
+    $ ncalendar -B 3 -A 11 -t 20122022
+
+Will print all calendars in the inclusive range between the 17th December of 2022 and the 31th December.
+The program is best invoked from a daily user-level cronjob.
 
 ## Test
 
@@ -44,3 +61,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 [netbsd calendar]: https://man.netbsd.org/calendar.1
 [time crate threads]: https://github.com/time-rs/time/issues/538
 [cargo defopts]: https://github.com/rust-lang/cargo/issues/8430
+[parser combinators wk]: https://en.wikipedia.org/wiki/Parser_combinator
