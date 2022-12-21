@@ -8,6 +8,7 @@ use std::env;
 use std::path::{self, Path};
 use structopt::StructOpt;
 use time::macros::format_description;
+use time::format_description;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "basic")]
@@ -60,10 +61,11 @@ fn main() {
     let forward = time::Duration::days(opt.forward.into());
     let span = TimeSpan::new(today, backward, forward).unwrap();
 
+    let outfmt = format_description::parse("[month repr:short] [day]").unwrap();
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
     for entry in entries {
         if let Some(date) = span.match_reminder(entry.day) {
-            println!("{}\t{}", date, entry.desc);
+            println!("{}\t{}", date.format(&outfmt).unwrap(), entry.desc);
         }
     }
 }

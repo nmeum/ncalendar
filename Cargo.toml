@@ -14,4 +14,4 @@ path = "src/main.rs"
 [dependencies]
 nom = "7.1.1"
 structopt = "0.3.26"
-time = { version = "0.3.17", features = ["macros", "parsing", "local-offset"] }
+time = { version = "0.3.17", features = ["macros", "parsing", "local-offset", "formatting"] }
