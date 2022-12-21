@@ -46,7 +46,7 @@ fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
 
 fn matches(t: &TimeSpan, e: &Entry) -> bool {
     match e.day {
-        Reminder::Weekday(wday) => t.contains_week(wday),
+        Reminder::Weekday(wday) => t.contains_weekday(wday),
         Reminder::Date(date) => t.contains(date),
     }
 }

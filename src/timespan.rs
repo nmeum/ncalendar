@@ -16,7 +16,7 @@ impl TimeSpan {
         d >= self.start && d <= self.end
     }
 
-    pub fn contains_week(&self, w: time::Weekday) -> bool {
+    pub fn contains_weekday(&self, w: time::Weekday) -> bool {
         let date = self.start;
 
         // Assume weekdays repeat every seven days.
@@ -62,17 +62,17 @@ mod tests {
     }
 
     #[test]
-    fn contains_week() {
+    fn contains_weekday() {
         let d = date!(2000 - 06 - 13);
         println!("Weekday: {:?}", d.weekday());
 
         let t = TimeSpan::new(d, Duration::days(0), Duration::days(3)).unwrap();
-        assert!(!t.contains_week(time::Weekday::Monday));
-        assert!(t.contains_week(time::Weekday::Tuesday));
-        assert!(t.contains_week(time::Weekday::Wednesday));
-        assert!(t.contains_week(time::Weekday::Thursday));
-        assert!(t.contains_week(time::Weekday::Friday));
-        assert!(!t.contains_week(time::Weekday::Saturday));
-        assert!(!t.contains_week(time::Weekday::Sunday));
+        assert!(!t.contains_weekday(time::Weekday::Monday));
+        assert!(t.contains_weekday(time::Weekday::Tuesday));
+        assert!(t.contains_weekday(time::Weekday::Wednesday));
+        assert!(t.contains_weekday(time::Weekday::Thursday));
+        assert!(t.contains_weekday(time::Weekday::Friday));
+        assert!(!t.contains_weekday(time::Weekday::Saturday));
+        assert!(!t.contains_weekday(time::Weekday::Sunday));
     }
 }
