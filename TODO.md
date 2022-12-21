@@ -1,10 +1,13 @@
 * Improve error handling
     * Don't unwrap on parser error in lib?
     * Don't use unwrap everywhere in binary?
+* Multiline descriptions (see OpenBSD man page)
+* Special handling for Fridays
 * Implement pre-processing with `cpp(1)`
 * Support wildcards (`*`) in input format, e.g.:
     * Any date of a month
     * Any month of a year
+    * Treat entries without a year as "any year", not "current year"
 * Support relative "addressing", e.g.:
     * Last Saturday of the month
     * First Monday of the month
