@@ -16,7 +16,9 @@ impl TimeSpan {
         d >= self.start && d <= self.end
     }
 
-    pub fn contains_weekday(&self, w: time::Weekday) -> bool {
+    /// Check if the time span contains the given weekday and if so
+    /// returns the first date for this weekday in the time span.
+    pub fn find_weekday(&self, w: time::Weekday) -> Option<time::Date> {
         let date = self.start;
 
         // Assume weekdays repeat every seven days.
@@ -25,18 +27,18 @@ impl TimeSpan {
             match date.checked_add(time::Duration::days(days)) {
                 Some(ndate) => {
                     if ndate > self.end {
-                        return false;
+                        return None;
                     } else if ndate.weekday() == w {
-                        return true;
+                        return Some(ndate);
                     }
                 }
-                None => return false,
+                None => return None,
             }
 
             days += 1
         }
 
-        false
+        None
     }
 }
 
@@ -62,17 +64,17 @@ mod tests {
     }
 
     #[test]
-    fn contains_weekday() {
+    fn find_weekday() {
         let d = date!(2000 - 06 - 13);
         println!("Weekday: {:?}", d.weekday());
 
         let t = TimeSpan::new(d, Duration::days(0), Duration::days(3)).unwrap();
-        assert!(!t.contains_weekday(time::Weekday::Monday));
-        assert!(t.contains_weekday(time::Weekday::Tuesday));
-        assert!(t.contains_weekday(time::Weekday::Wednesday));
-        assert!(t.contains_weekday(time::Weekday::Thursday));
-        assert!(t.contains_weekday(time::Weekday::Friday));
-        assert!(!t.contains_weekday(time::Weekday::Saturday));
-        assert!(!t.contains_weekday(time::Weekday::Sunday));
+        assert_eq!(t.find_weekday(time::Weekday::Monday), None);
+        assert_eq!(t.find_weekday(time::Weekday::Tuesday), Some(date!(2000 - 06 - 13)));
+        assert_eq!(t.find_weekday(time::Weekday::Wednesday), Some(date!(2000 - 06 - 14)));
+        assert_eq!(t.find_weekday(time::Weekday::Thursday), Some(date!(2000 - 06 - 15)));
+        assert_eq!(t.find_weekday(time::Weekday::Friday), Some(date!(2000 - 06 - 16)));
+        assert_eq!(t.find_weekday(time::Weekday::Saturday), None);
+        assert_eq!(t.find_weekday(time::Weekday::Sunday), None);
     }
 }

@@ -4,7 +4,7 @@ extern crate structopt;
 mod timespan;
 
 use crate::timespan::TimeSpan;
-use ncalendar::{Entry, Reminder};
+use ncalendar::Reminder;
 use std::env;
 use std::path::{self, Path};
 use structopt::StructOpt;
@@ -44,13 +44,6 @@ fn parse_today(input: &str) -> Result<time::Date, time::error::Parse> {
     time::Date::parse(input, &fmt)
 }
 
-fn matches(t: &TimeSpan, e: &Entry) -> bool {
-    match e.day {
-        Reminder::Weekday(wday) => t.contains_weekday(wday),
-        Reminder::Date(date) => t.contains(date),
-    }
-}
-
 fn main() {
     let opt = Opt::from_args();
     let fp = if let Some(p) = opt.file {
@@ -69,11 +62,25 @@ fn main() {
     let span = TimeSpan::new(today, backward, forward).unwrap();
 
     let entries = ncalendar::parse_file(fp.as_path()).unwrap();
-    let filtered = entries.iter().filter(|entry| matches(&span, entry));
+    for entry in entries {
+        let date = match entry.day {
+            Reminder::Weekday(w) => {
+                if let Some(d) = span.find_weekday(w) {
+                    d
+                } else {
+                    continue
+                }
+            },
+            Reminder::Date(d) => {
+                if !span.contains(d) {
+                    continue
+                } else {
+                    d
+                }
+            }
+        };
 
-    // TODO: Filter entries using the matches method below and then print them.
-    for entry in filtered {
-        println!("Entry: {:?} - {:?}", entry.day, entry.desc);
+        println!("{}\t{}", date, entry.desc);
     }
 }
 
