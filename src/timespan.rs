@@ -6,6 +6,30 @@ pub struct TimeSpan {
     end: time::Date,
 }
 
+/// Iterates over a time span by included days.
+pub struct DayIterator<'a> {
+    cur: &'a TimeSpan,
+    off: i64, // offset in days
+}
+
+impl<'a> Iterator for DayIterator<'a> {
+    type Item = time::Date;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let cur = &self.cur;
+        match cur.start.checked_add(time::Duration::days(self.off)) {
+            Some(ndate) => {
+                if ndate > cur.end {
+                    return None;
+                }
+                self.off += 1;
+                return Some(ndate);
+            }
+            None => return None,
+        }
+    }
+}
+
 impl TimeSpan {
     pub fn new(day: time::Date, back: time::Duration, forward: time::Duration) -> Option<Self> {
         let start = day.checked_sub(back)?;
@@ -21,20 +45,13 @@ impl TimeSpan {
     /// Check if the time span contains the given weekday and if so
     /// returns the first date for this weekday in the time span.
     pub fn find_weekday(&self, w: time::Weekday) -> Option<time::Date> {
-        let date = self.start;
-
-        // Assume weekdays repeat every seven days.
-        let mut days = 0;
-        while days < 7 {
-            match date.checked_add(time::Duration::days(days)) {
-                Some(ndate) => {
-                    if ndate > self.end {
-                        return None;
-                    } else if ndate.weekday() == w {
-                        return Some(ndate);
-                    }
-                }
-                None => return None,
+        let mut days: u8 = 0;
+        for date in self.iter() {
+            // Assume weekdays repeat every seven days.
+            if days >= 7 || date > self.end {
+                return None;
+            } else if date.weekday() == w {
+                return Some(date);
             }
 
             days += 1
@@ -62,6 +79,11 @@ impl TimeSpan {
                 }
             }
         }
+    }
+
+    /// Iterate over all days in the given time span.
+    pub fn iter(&self) -> DayIterator {
+        return DayIterator { cur: self, off: 0 };
     }
 }
 
@@ -111,5 +133,16 @@ mod tests {
         );
         assert_eq!(t.find_weekday(time::Weekday::Saturday), None);
         assert_eq!(t.find_weekday(time::Weekday::Sunday), None);
+    }
+
+    #[test]
+    fn iterator() {
+        let d = date!(1980 - 03 - 20);
+        let t = TimeSpan::new(d, time::Duration::days(0), time::Duration::days(1)).unwrap();
+
+        let mut it: DayIterator = t.iter();
+        assert_eq!(it.next(), Some(date!(1980 - 03 - 20)));
+        assert_eq!(it.next(), Some(date!(1980 - 03 - 21)));
+        assert_eq!(it.next(), None);
     }
 }
