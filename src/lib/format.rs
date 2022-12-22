@@ -96,7 +96,7 @@ fn parse_desc(input: &str) -> IResult<&str, String> {
     if ext.is_empty() {
         Ok((input, desc.to_string()))
     } else {
-        Ok((input, desc.to_owned() + " " + &ext.join(" ")))
+        Ok((input, desc.to_owned() + "\n\t" + &ext.join("\n\t")))
     }
 }
 
@@ -160,10 +160,10 @@ mod tests {
     #[test]
     fn desc() {
         assert_eq!(parse_desc("foo bar\n"), Ok(("", "foo bar".to_string())));
-        assert_eq!(parse_desc("foo\n\tbar\n"), Ok(("", "foo bar".to_string())));
+        assert_eq!(parse_desc("foo\n\tbar\n"), Ok(("", "foo\n\tbar".to_string())));
         assert_eq!(
             parse_desc("foo\n\tbar\n\tbaz\n"),
-            Ok(("", "foo bar baz".to_string()))
+            Ok(("", "foo\n\tbar\n\tbaz".to_string()))
         );
     }
 
