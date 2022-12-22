@@ -1,14 +1,16 @@
 extern crate nom;
 extern crate time;
 
+mod error;
 mod format;
 mod util;
 
 use std::convert;
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::Read;
 use std::path;
 
+use crate::error::Error;
 use crate::format::*;
 
 ////////////////////////////////////////////////////////////////////////
@@ -42,30 +44,6 @@ impl Entry {
 }
 
 ////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug)]
-pub enum Error {
-    IncompleteParse,
-    ParsingError(String, nom::error::ErrorKind),
-    IoError(io::Error),
-}
-
-impl From<nom::Err<nom::error::Error<&str>>> for Error {
-    fn from(e: nom::Err<nom::error::Error<&str>>) -> Self {
-        match e {
-            nom::Err::Incomplete(_) => Error::IncompleteParse,
-            nom::Err::Error(e) | nom::Err::Failure(e) => {
-                Error::ParsingError(e.input.to_string(), e.code)
-            }
-        }
-    }
-}
-
-impl From<io::Error> for Error {
-    fn from(e: io::Error) -> Self {
-        Error::IoError(e)
-    }
-}
 
 pub fn parse_file<'a, P: convert::AsRef<path::Path>>(fp: P) -> Result<Vec<Entry>, Error> {
     let mut f = File::open(fp)?;
