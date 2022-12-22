@@ -45,16 +45,13 @@ impl TimeSpan {
     /// Check if the time span contains the given weekday and if so
     /// returns the first date for this weekday in the time span.
     pub fn find_weekday(&self, w: time::Weekday) -> Option<time::Date> {
-        let mut days: u8 = 0;
-        for date in self.iter() {
+        for (days, date) in self.iter().enumerate() {
             // Assume weekdays repeat every seven days.
             if days >= 7 || date > self.end {
                 return None;
             } else if date.weekday() == w {
                 return Some(date);
             }
-
-            days += 1
         }
 
         None
