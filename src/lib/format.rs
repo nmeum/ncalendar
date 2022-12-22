@@ -6,7 +6,7 @@ use nom::{
     character::complete::{char, line_ending, not_line_ending},
     combinator::{map_res, opt},
     multi::many0,
-    sequence::{terminated, tuple},
+    sequence::{preceded, terminated, tuple},
     IResult,
 };
 use std::num::TryFromIntError;
@@ -84,20 +84,26 @@ fn parse_reminder(input: &str) -> IResult<&str, Reminder> {
     ))(input)
 }
 
-fn parse_desc(input: &str) -> IResult<&str, &str> {
-    terminated(not_line_ending, line_ending)(input)
+fn parse_desc(input: &str) -> IResult<&str, String> {
+    let (input, (desc, ext)) = tuple((
+        terminated(not_line_ending, line_ending),
+        many0(terminated(
+            preceded(char('\t'), not_line_ending),
+            line_ending,
+        )),
+    ))(input)?;
+
+    if ext.is_empty() {
+        Ok((input, desc.to_string()))
+    } else {
+        Ok((input, desc.to_owned() + " " + &ext.join(" ")))
+    }
 }
 
 fn parse_entry(input: &str) -> IResult<&str, Entry> {
     let (input, (day, _, desc)) = tuple((parse_reminder, char('\t'), parse_desc))(input)?;
 
-    Ok((
-        input,
-        Entry {
-            day,
-            desc: desc.to_string(),
-        },
-    ))
+    Ok((input, Entry { day, desc: desc }))
 }
 
 pub fn parse_entries(input: &str) -> IResult<&str, Vec<Entry>> {
@@ -153,7 +159,12 @@ mod tests {
 
     #[test]
     fn desc() {
-        assert_eq!(parse_desc("foo bar\n"), Ok(("", "foo bar")));
+        assert_eq!(parse_desc("foo bar\n"), Ok(("", "foo bar".to_string())));
+        assert_eq!(parse_desc("foo\n\tbar\n"), Ok(("", "foo bar".to_string())));
+        assert_eq!(
+            parse_desc("foo\n\tbar\n\tbaz\n"),
+            Ok(("", "foo bar baz".to_string()))
+        );
     }
 
     #[test]
