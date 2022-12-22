@@ -47,7 +47,7 @@ impl TimeSpan {
     pub fn find_weekday(&self, w: time::Weekday) -> Option<time::Date> {
         for (days, date) in self.iter().enumerate() {
             // Assume weekdays repeat every seven days.
-            if days >= 7 || date > self.end {
+            if days >= 7 {
                 return None;
             } else if date.weekday() == w {
                 return Some(date);
