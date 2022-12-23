@@ -107,7 +107,7 @@ fn parse_entry(input: &str) -> IResult<&str, Entry> {
 }
 
 pub fn parse_entries(input: &str) -> IResult<&str, Vec<Entry>> {
-    many0(parse_entry)(input)
+    many0(empty_lines(parse_entry))(input)
 }
 
 ////////////////////////////////////////////////////////////////////////

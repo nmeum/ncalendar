@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, one_of},
+    character::complete::{char, one_of, line_ending},
     combinator::{map_res, recognize},
     error::{FromExternalError, ParseError},
     multi::{many0, many1},
@@ -32,4 +32,13 @@ where
     F: Fn(&'a str) -> IResult<&'a str, O, E>,
 {
     delimited(many0(char(' ')), inner, many0(char(' ')))
+}
+
+pub fn empty_lines<'a, F: 'a, O, E: ParseError<&'a str> + 'a>(
+    inner: F,
+) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O, E>,
+{
+    delimited(many0(ws(line_ending)), inner, many0(ws(line_ending)))
 }
