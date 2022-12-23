@@ -1,8 +1,10 @@
 use std::io;
+use std::str;
 
 #[derive(Debug)]
 pub enum Error {
     IncompleteParse,
+    EncodingError(str::Utf8Error),
     ParsingError(String, nom::error::ErrorKind),
     IoError(io::Error),
 }
@@ -21,5 +23,11 @@ impl From<nom::Err<nom::error::Error<&str>>> for Error {
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Self {
         Error::IoError(e)
+    }
+}
+
+impl From<str::Utf8Error> for Error {
+    fn from(e: str::Utf8Error) -> Self {
+        Error::EncodingError(e)
     }
 }

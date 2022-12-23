@@ -1,13 +1,12 @@
 extern crate nom;
 extern crate time;
 
+mod cpp;
 mod error;
 mod format;
 mod util;
 
 use std::convert;
-use std::fs::File;
-use std::io::Read;
 use std::path;
 
 use crate::error::Error;
@@ -46,12 +45,8 @@ impl Entry {
 ////////////////////////////////////////////////////////////////////////
 
 pub fn parse_file<'a, P: convert::AsRef<path::Path>>(fp: P) -> Result<Vec<Entry>, Error> {
-    let mut f = File::open(fp)?;
-
-    let mut buf = String::new();
-    f.read_to_string(&mut buf)?;
-
-    let (input, entries) = parse_entries(&buf)?;
+    let out = cpp::preprocess(fp)?;
+    let (input, entries) = parse_entries(&out)?;
     if input != "" {
         Err(Error::IncompleteParse)
     } else {
