@@ -61,7 +61,16 @@ impl TimeSpan {
     /// if so return the first date in the time span that matches it.
     pub fn match_reminder(&self, r: Reminder) -> Option<time::Date> {
         match r {
-            Reminder::Weekday(w) => {
+            Reminder::Yearly(d, m) => {
+                for date in self.iter() {
+                    if date.day() == d && date.month() == m {
+                        return Some(date)
+                    }
+                }
+
+                None
+            }
+            Reminder::Weekly(w) => {
                 if let Some(d) = self.find_weekday(w) {
                     Some(d)
                 } else {

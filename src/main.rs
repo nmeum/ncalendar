@@ -55,7 +55,7 @@ fn main() {
     let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
     let entries = ncalendar::parse_file(opt.file.as_path()).unwrap();
     for entry in entries {
-        let postfix = if entry.is_reoccuring() { '*' } else { ' ' };
+        let postfix = if entry.reoccurs_weekly() { '*' } else { ' ' };
 
         if let Some(date) = span.match_reminder(entry.day) {
             if opt.week {
