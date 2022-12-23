@@ -30,7 +30,42 @@ impl<'a> Iterator for DayIterator<'a> {
     }
 }
 
+/// Iterates over a time span by included months.
+/// In each iteration a time span for the month is returned.
+pub struct MonthIterator<'a> {
+    cur: &'a TimeSpan,
+    off: time::Duration, // offset
+    // mon: time::Month,
+    // year: ncalendar::Year,
+}
+
+impl<'a> Iterator for MonthIterator<'a> {
+    type Item = &'a TimeSpan;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let cur = &self.cur;
+        match cur.start.checked_add(self.off) {
+            Some(ndate) => {
+                if ndate > cur.end {
+                    return None
+                }
+
+                if ndate.month() == cur.end.month() && ndate.year() == cur.end.year() {
+                    self.off = cur.end - ndate; // None on next iteration
+                    return Some(self.cur);
+                }
+
+                // Return iterator between (first of the month, last of the month).
+                // Increment offset by days_in_year_month(month).
+                unimplemented!();
+            }
+            None => return None,
+        }
+    }
+}
+
 impl TimeSpan {
+    // TODO: Make back and forward days, not durations.
     pub fn new(day: time::Date, back: time::Duration, forward: time::Duration) -> Option<Self> {
         let start = day.checked_sub(back)?;
         let end = day.checked_add(forward)?;
@@ -65,6 +100,8 @@ impl TimeSpan {
                 // TODO: fast path, i.e. check if months is even in time span?
                 // Also: Don't iterate over multiple years, stop after 1 year.
                 // Ideally iterate over months and then days in the month.
+                //
+                // See: days_in_year_month from time.rs
                 for date in self.iter() {
                     if date.day() == d && date.month() == m {
                         return Some(date)
