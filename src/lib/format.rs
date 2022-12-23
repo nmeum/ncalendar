@@ -179,5 +179,16 @@ mod tests {
                 }
             ))
         );
+
+        assert_eq!(
+            parse_entry("Mon\tMonday\n"),
+            Ok((
+                "",
+                Entry {
+                    day: Reminder::Weekday(time::Weekday::Monday),
+                    desc: "Monday".to_string(),
+                }
+            ))
+        );
     }
 }
