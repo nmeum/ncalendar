@@ -52,35 +52,23 @@ fn parse_year(input: &str) -> IResult<&str, Year> {
     })(input)
 }
 
-fn parse_date(input: &str) -> IResult<&str, time::Date> {
-    // TODO: error handling
-    let cur = time::OffsetDateTime::now_local().unwrap();
-    let year = cur.year();
-
-    alt((
-        map_res(
-            tuple((parse_day, ws(parse_month), opt(parse_year))),
-            move |(day, mon, y)| -> Result<time::Date, time::error::ComponentRange> {
-                time::Date::from_calendar_date(y.unwrap_or(year), mon, day)
-            },
-        ),
-        map_res(
-            tuple((parse_month, opt(ws(parse_year)))),
-            move |(mon, y)| -> Result<time::Date, time::error::ComponentRange> {
-                time::Date::from_calendar_date(y.unwrap_or(year), mon, 01)
-            },
-        ),
-    ))(input)
-}
-
 fn parse_reminder(input: &str) -> IResult<&str, Reminder> {
     alt((
         map_res(parse_weekday, |wday| -> Result<Reminder, ()> {
-            Ok(Reminder::Weekday(wday))
+            Ok(Reminder::Weekly(wday))
         }),
-        map_res(parse_date, |date| -> Result<Reminder, ()> {
-            Ok(Reminder::Date(date))
-        }),
+        map_res(
+            tuple((opt(parse_day), ws(parse_month), opt(parse_year))),
+            move |(day, mon, year)| -> Result<Reminder, time::error::ComponentRange> {
+                let day = day.unwrap_or(1);
+                Ok(
+                    match year {
+                        Some(y) => Reminder::Date(time::Date::from_calendar_date(y, mon, day)?),
+                        None    => Reminder::Yearly(day, mon),
+                    }
+                )
+            }
+        ),
     ))(input)
 }
 
@@ -125,31 +113,10 @@ mod tests {
     }
 
     #[test]
-    fn date() {
-        let year = time::OffsetDateTime::now_local().unwrap().year();
-        assert_eq!(
-            parse_date("25 Feb"),
-            Ok((
-                "",
-                time::Date::from_calendar_date(year, time::Month::February, 25).unwrap()
-            ))
-        );
-        assert_eq!(parse_date("12 Dec 1950"), Ok(("", date!(1950 - 12 - 12))));
-        assert_eq!(
-            parse_date("Dec"),
-            Ok((
-                "",
-                time::Date::from_calendar_date(year, time::Month::December, 01).unwrap()
-            ))
-        );
-        assert_eq!(parse_date("Jan 1990"), Ok(("", date!(1990 - 01 - 01))));
-    }
-
-    #[test]
     fn reminder() {
         assert_eq!(
             parse_reminder("Fri"),
-            Ok(("", Reminder::Weekday(time::Weekday::Friday)))
+            Ok(("", Reminder::Weekly(time::Weekday::Friday)))
         );
         assert_eq!(
             parse_reminder("06 July 2020"),
@@ -185,7 +152,7 @@ mod tests {
             Ok((
                 "",
                 Entry {
-                    day: Reminder::Weekday(time::Weekday::Monday),
+                    day: Reminder::Weekly(time::Weekday::Monday),
                     desc: "Monday".to_string(),
                 }
             ))

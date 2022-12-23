@@ -15,13 +15,14 @@ use crate::format::*;
 ////////////////////////////////////////////////////////////////////////
 
 ///
-pub type Day = u8;
+pub type Day = u8; // Day of the month
 pub type Year = i32;
 
 ///
 #[derive(Debug, PartialEq)]
 pub enum Reminder {
-    Weekday(time::Weekday),
+    Weekly(time::Weekday),
+    Yearly(Day, time::Month),
     Date(time::Date),
 }
 
@@ -34,9 +35,9 @@ pub struct Entry {
 }
 
 impl Entry {
-    pub fn is_reoccuring(&self) -> bool {
+    pub fn reoccurs_weekly(&self) -> bool {
         match self.day {
-            Reminder::Weekday(_) => true,
+            Reminder::Weekly(_) => true,
             _ => false,
         }
     }
