@@ -23,8 +23,6 @@ However, the input format is not intended to be fully compatible with OpenBSD.
 
 This software can be installed using the following commands:
 
-    $ git clone git://git.8pit.net/ncalendar.git
-    $ cd ncalendar
     $ cargo install --path .
 
 This will drop the `ncalendar` binary into `~/.cargo/bin`.
