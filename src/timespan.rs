@@ -1,6 +1,8 @@
 use ncalendar::Reminder;
+use time::util::days_in_year_month;
 
 /// Represents a time span between two dates.
+#[derive(Debug, PartialEq)]
 pub struct TimeSpan {
     start: time::Date,
     end: time::Date,
@@ -35,12 +37,10 @@ impl<'a> Iterator for DayIterator<'a> {
 pub struct MonthIterator<'a> {
     cur: &'a TimeSpan,
     off: time::Duration, // offset
-    // mon: time::Month,
-    // year: ncalendar::Year,
 }
 
 impl<'a> Iterator for MonthIterator<'a> {
-    type Item = &'a TimeSpan;
+    type Item = TimeSpan;
 
     fn next(&mut self) -> Option<Self::Item> {
         let cur = &self.cur;
@@ -51,13 +51,23 @@ impl<'a> Iterator for MonthIterator<'a> {
                 }
 
                 if ndate.month() == cur.end.month() && ndate.year() == cur.end.year() {
-                    self.off = cur.end - ndate; // None on next iteration
-                    return Some(self.cur);
+                    let diff = cur.end - ndate;
+                    // Increment off beyond cur.end to return None on next iteration.
+                    self.off += diff + time::Duration::days(1);
+
+                    return Some(TimeSpan{
+                        start: ndate,
+                        end: self.cur.end,
+                    })
                 }
 
-                // Return iterator between (first of the month, last of the month).
-                // Increment offset by days_in_year_month(month).
-                unimplemented!();
+                // Duration to reach end of month from new date.
+                let days_to_end = days_in_year_month(ndate.year(), ndate.month()) - ndate.day();
+                let to_end = time::Duration::days(days_to_end.into());
+
+                self.off += to_end + time::Duration::days(1);
+                ndate.checked_add(to_end)
+                    .map(|d| TimeSpan{ start: ndate, end: d })
             }
             None => return None,
         }
@@ -71,6 +81,10 @@ impl TimeSpan {
         let end = day.checked_add(forward)?;
 
         Some(TimeSpan { start, end })
+    }
+
+    pub fn from_dates(start: time::Date, end: time::Date) -> TimeSpan {
+        TimeSpan{start, end}
     }
 
     pub fn contains_date(&self, d: time::Date) -> bool {
@@ -125,6 +139,10 @@ impl TimeSpan {
                 }
             }
         }
+    }
+
+    pub fn months(&self) -> MonthIterator {
+        return MonthIterator { cur: self, off: time::Duration::days(0) };
     }
 
     /// Iterate over all days in the given time span.
@@ -182,7 +200,7 @@ mod tests {
     }
 
     #[test]
-    fn iterator() {
+    fn day_iterator() {
         let d = date!(1980 - 03 - 20);
         let t = TimeSpan::new(d, time::Duration::days(0), time::Duration::days(1)).unwrap();
 
@@ -190,5 +208,23 @@ mod tests {
         assert_eq!(it.next(), Some(date!(1980 - 03 - 20)));
         assert_eq!(it.next(), Some(date!(1980 - 03 - 21)));
         assert_eq!(it.next(), None);
+    }
+
+    #[test]
+    fn month_iterator() {
+        let d = date!(2022 - 12 - 01);
+        let t = TimeSpan::new(d, time::Duration::days(0), time::Duration::days(100)).unwrap();
+        println!("t: {:?}", t);
+
+        let months: Vec<TimeSpan> = t.months().collect();
+        assert_eq!(
+            vec![
+                TimeSpan::from_dates(date!(2022 - 12 - 01), date!(2022 - 12 - 31)),
+                TimeSpan::from_dates(date!(2023 - 01 - 01), date!(2023 - 01 - 31)),
+                TimeSpan::from_dates(date!(2023 - 02 - 01), date!(2023 - 02 - 28)),
+                TimeSpan::from_dates(date!(2023 - 03 - 01), date!(2023 - 03 - 11)),
+            ],
+            months
+        );
     }
 }
