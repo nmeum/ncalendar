@@ -61,7 +61,7 @@ fn main() {
             .partition(|e| e.day.matches(date));
 
         matched.iter().for_each(|entry| {
-            let postfix = if entry.reoccurs_weekly() { '*' } else { ' ' };
+            let postfix = if entry.is_fixed() { ' ' } else { '*' };
 
             if opt.week {
                 print!("{} ", weekday_short(date));

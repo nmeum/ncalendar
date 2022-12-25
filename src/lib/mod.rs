@@ -45,10 +45,10 @@ pub struct Entry {
 }
 
 impl Entry {
-    pub fn reoccurs_weekly(&self) -> bool {
+    pub fn is_fixed(&self) -> bool {
         match self.day {
-            Reminder::Weekly(_) => true,
-            _ => false,
+            Reminder::Weekly(_) => false,
+            _ => true,
         }
     }
 }
