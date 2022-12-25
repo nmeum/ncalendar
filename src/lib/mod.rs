@@ -26,6 +26,16 @@ pub enum Reminder {
     Date(time::Date),
 }
 
+impl Reminder {
+    pub fn matches(&self, date: time::Date) -> bool {
+        match self {
+            Reminder::Weekly(wday) => date.weekday() == *wday,
+            Reminder::Yearly(day, mon) => date.month() == *mon && date.day() == *day,
+            Reminder::Date(d) => date == *d,
+        }
+    }
+}
+
 /// Represents a single appointment from the calendar file.
 #[derive(Debug, PartialEq)]
 pub struct Entry {

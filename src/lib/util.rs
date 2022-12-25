@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, one_of, line_ending},
+    character::complete::{char, line_ending, one_of},
     combinator::{map_res, recognize},
     error::{FromExternalError, ParseError},
     multi::{many0, many1},

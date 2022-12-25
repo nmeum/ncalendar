@@ -53,11 +53,16 @@ fn main() {
     .unwrap();
 
     let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
-    let entries = ncalendar::parse_file(opt.file.as_path()).unwrap();
-    for entry in entries {
-        let postfix = if entry.reoccurs_weekly() { '*' } else { ' ' };
+    let mut entries = ncalendar::parse_file(opt.file.as_path()).unwrap();
 
-        if let Some(date) = span.match_reminder(entry.day) {
+    for date in span.iter() {
+        let (matched, remaning): (Vec<_>, Vec<_>) = entries
+            .into_iter() // TODO: use .iter() here to avoid copy
+            .partition(|e| e.day.matches(date));
+
+        matched.iter().for_each(|entry| {
+            let postfix = if entry.reoccurs_weekly() { '*' } else { ' ' };
+
             if opt.week {
                 print!("{} ", weekday_short(date));
             }
@@ -67,6 +72,11 @@ fn main() {
                 postfix,
                 entry.desc
             );
+        });
+
+        entries = remaning;
+        if entries.is_empty() {
+            break;
         }
     }
 }
