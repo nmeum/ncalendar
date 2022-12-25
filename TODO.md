@@ -1,8 +1,9 @@
-* Improve error handling
-    * Don't use unwrap everywhere in binary?
+* Support numeric month names
 * Support relative "addressing", e.g.:
     * Last Saturday of the month
     * First Monday of the month
+* Improve error handling
+    * Don't use unwrap everywhere in binary?
 * Implement the OpenBSD's `-a` flag
     * Requires changing uid
     * Opportunity to experiment with low-level POSIX APIs in Rust
