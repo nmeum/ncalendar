@@ -1,7 +1,7 @@
 use std::convert;
 use std::fs::File;
-use std::path;
 use std::io::Read;
+use std::path;
 use std::process::{Command, Stdio};
 use std::str;
 
@@ -18,7 +18,7 @@ pub fn has_cpp() -> bool {
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .spawn()
-        .is_ok()
+        .is_ok();
 }
 
 pub fn preprocess<P: convert::AsRef<path::Path>>(fp: P) -> Result<String, Error> {
