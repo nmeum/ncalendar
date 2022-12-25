@@ -58,6 +58,10 @@ fn parse_reminder(input: &str) -> IResult<&str, Reminder> {
             Ok(Reminder::Weekly(wday))
         }),
         map_res(
+            tuple((parse_day, ws(char('*')), opt(parse_year))),
+            |(day, _, year)| -> Result<Reminder, ()> { Ok(Reminder::Monthly(day, year)) },
+        ),
+        map_res(
             tuple((opt(parse_day), ws(parse_month), opt(parse_year))),
             move |(day, mon, year)| -> Result<Reminder, time::error::ComponentRange> {
                 let day = day.unwrap_or(1);
@@ -131,6 +135,14 @@ mod tests {
         assert_eq!(
             parse_reminder("12 Dec 1950"),
             Ok(("", Reminder::Date(date!(1950 - 12 - 12))))
+        );
+        assert_eq!(
+            parse_reminder("10 *"),
+            Ok(("", Reminder::Monthly(10, None)))
+        );
+        assert_eq!(
+            parse_reminder("10 * 1989"),
+            Ok(("", Reminder::Monthly(10, Some(1989))))
         );
     }
 

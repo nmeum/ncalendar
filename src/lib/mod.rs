@@ -22,6 +22,7 @@ pub type Year = i32;
 #[derive(Debug, PartialEq)]
 pub enum Reminder {
     Weekly(time::Weekday),
+    Monthly(Day, Option<Year>),
     Yearly(Day, time::Month),
     Date(time::Date),
 }
@@ -30,6 +31,9 @@ impl Reminder {
     pub fn matches(&self, date: time::Date) -> bool {
         match self {
             Reminder::Weekly(wday) => date.weekday() == *wday,
+            Reminder::Monthly(day, year) => {
+                date.day() == *day && year.map(|y| date.year() == y).unwrap_or(true)
+            }
             Reminder::Yearly(day, mon) => date.month() == *mon && date.day() == *day,
             Reminder::Date(d) => date == *d,
         }
@@ -47,7 +51,7 @@ pub struct Entry {
 impl Entry {
     pub fn is_fixed(&self) -> bool {
         match self.day {
-            Reminder::Weekly(_) => false,
+            Reminder::Weekly(_) | Reminder::Monthly(_, _) => false,
             _ => true,
         }
     }

@@ -1,8 +1,5 @@
 * Improve error handling
     * Don't use unwrap everywhere in binary?
-* Support wildcards (`*`) in input format, e.g.:
-    * Any date of a month
-    * Any month of a year
 * Support relative "addressing", e.g.:
     * Last Saturday of the month
     * First Monday of the month
