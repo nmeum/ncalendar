@@ -1,4 +1,3 @@
-* Support numeric month names
 * Support relative "addressing", e.g.:
     * Last Saturday of the month
     * First Monday of the month
