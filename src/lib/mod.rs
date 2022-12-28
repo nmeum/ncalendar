@@ -2,7 +2,7 @@ extern crate nom;
 extern crate time;
 
 mod cpp;
-mod error;
+pub mod error;
 mod format;
 mod util;
 
