@@ -2,6 +2,7 @@ extern crate nom;
 extern crate time;
 
 mod cpp;
+mod weekday;
 pub mod error;
 mod format;
 mod util;
