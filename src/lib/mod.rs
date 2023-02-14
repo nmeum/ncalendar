@@ -53,14 +53,12 @@ impl Reminder {
     pub fn matches(&self, date: time::Date) -> bool {
         match self {
             Reminder::Weekly(wday) => date.weekday() == *wday,
-            Reminder::SemiWeekly(wday, off) => {
-                if let Some(wdays) = weekday::filter(date.year(), date.month(), *wday) {
+            Reminder::SemiWeekly(wday, off) => weekday::filter(date.year(), date.month(), *wday)
+                .map(|wdays: Vec<time::Date>| -> bool {
                     let idx: usize = off.into();
                     wdays[idx] == date
-                } else {
-                    false
-                }
-            }
+                })
+                .unwrap_or(false),
             Reminder::Monthly(day, year) => {
                 date.day() == *day && year.map(|y| date.year() == y).unwrap_or(true)
             }
