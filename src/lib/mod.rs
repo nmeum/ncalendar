@@ -96,3 +96,22 @@ pub fn parse_file<'a, P: convert::AsRef<path::Path>>(fp: P) -> Result<Vec<Entry>
         Ok(entries)
     }
 }
+
+////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time::macros::date;
+
+    #[test]
+    fn match_semiweekly() {
+        let rem1 = Reminder::SemiWeekly(time::Weekday::Monday, WeekOffset::Second);
+        assert!(rem1.matches(date!(2023 - 02 - 13)));
+        assert!(!rem1.matches(date!(2023 - 02 - 06)));
+
+        let rem2 = Reminder::SemiWeekly(time::Weekday::Sunday, WeekOffset::Fourth);
+        assert!(rem2.matches(date!(2023 - 02 - 26)));
+        assert!(!rem2.matches(date!(2023 - 02 - 05)));
+    }
+}
