@@ -25,30 +25,23 @@ impl Iterator for WeekdayIterator {
     }
 }
 
-fn iterator(
-    year: i32,
-    month: time::Month,
-    wday: time::Weekday,
-) -> Result<WeekdayIterator, time::error::ComponentRange> {
+fn iterator(year: i32, month: time::Month, wday: time::Weekday) -> Option<WeekdayIterator> {
+    let mut day = Date::from_calendar_date(year, month, 1).ok()?;
+
     // Find first matching weekday in given month.
-    let mut day = Date::from_calendar_date(year, month, 1)?;
     while day.weekday() != wday {
         if day.month() != month {
-            panic!("unreachable");
+            return None;
         }
 
-        day = day.next_day().unwrap();
+        day = day.next_day()?;
     }
 
-    Ok(WeekdayIterator { start: day, off: 0 })
+    Some(WeekdayIterator { start: day, off: 0 })
 }
 
 pub fn filter(year: i32, month: time::Month, wday: time::Weekday) -> Option<Vec<time::Date>> {
-    if let Ok(it) = iterator(year, month, wday) {
-        Some(it.collect())
-    } else {
-        None
-    }
+    iterator(year, month, wday).map(|it| it.collect())
 }
 
 ////////////////////////////////////////////////////////////////////////
