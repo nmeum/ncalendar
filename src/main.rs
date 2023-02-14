@@ -16,7 +16,7 @@ use time::format_description;
 struct Opt {
     // XXX: Should this use try_from_os_str?!
     /// Use the given file as the default calendar file.
-    #[structopt(short = "f", parse(try_from_str = parse_file))]
+    #[structopt(short = "f", default_value = "", parse(try_from_str = parse_file))]
     file: path::PathBuf,
 
     /// Amount of next days to consider.
