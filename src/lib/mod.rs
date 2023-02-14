@@ -2,10 +2,10 @@ extern crate nom;
 extern crate time;
 
 mod cpp;
-mod weekday;
 pub mod error;
 mod format;
 mod util;
+mod weekday;
 
 use std::convert;
 use std::path;
@@ -20,9 +20,30 @@ pub type Day = u8; // Day of the month
 pub type Year = i32;
 
 ///
+#[derive(Debug, PartialEq, PartialOrd)]
+pub enum WeekOffset {
+    First,
+    Second,
+    Third,
+    Fourth,
+}
+
+impl From<&WeekOffset> for usize {
+    fn from(off: &WeekOffset) -> Self {
+        match off {
+            WeekOffset::First => 0,
+            WeekOffset::Second => 1,
+            WeekOffset::Third => 2,
+            WeekOffset::Fourth => 3,
+        }
+    }
+}
+
+///
 #[derive(Debug, PartialEq)]
 pub enum Reminder {
     Weekly(time::Weekday),
+    SemiWeekly(time::Weekday, WeekOffset),
     Monthly(Day, Option<Year>),
     Yearly(Day, time::Month),
     Date(time::Date),
@@ -32,6 +53,14 @@ impl Reminder {
     pub fn matches(&self, date: time::Date) -> bool {
         match self {
             Reminder::Weekly(wday) => date.weekday() == *wday,
+            Reminder::SemiWeekly(wday, off) => {
+                if let Some(wdays) = weekday::filter(date.year(), date.month(), *wday) {
+                    let idx: usize = off.into();
+                    wdays[idx] == date
+                } else {
+                    false
+                }
+            }
             Reminder::Monthly(day, year) => {
                 date.day() == *day && year.map(|y| date.year() == y).unwrap_or(true)
             }
