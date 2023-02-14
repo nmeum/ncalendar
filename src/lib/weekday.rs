@@ -25,7 +25,7 @@ impl Iterator for WeekdayIterator {
     }
 }
 
-pub fn iterator(
+fn iterator(
     year: i32,
     month: time::Month,
     wday: time::Weekday,
@@ -41,6 +41,14 @@ pub fn iterator(
     }
 
     Ok(WeekdayIterator { start: day, off: 0 })
+}
+
+pub fn filter(year: i32, month: time::Month, wday: time::Weekday) -> Option<Vec<time::Date>> {
+    if let Ok(it) = iterator(year, month, wday) {
+        Some(it.collect())
+    } else {
+        None
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
