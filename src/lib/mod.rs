@@ -69,7 +69,7 @@ pub struct Entry {
 impl Entry {
     pub fn is_fixed(&self) -> bool {
         match self.day {
-            Reminder::Weekly(_) | Reminder::Monthly(_, _) => false,
+            Reminder::SemiWeekly(_, _) | Reminder::Weekly(_) | Reminder::Monthly(_, _) => false,
             _ => true,
         }
     }
