@@ -18,26 +18,7 @@ use crate::format::*;
 ///
 pub type Day = u8; // Day of the month
 pub type Year = i32;
-
-///
-#[derive(Debug, PartialEq, PartialOrd)]
-pub enum WeekOffset {
-    First,
-    Second,
-    Third,
-    Fourth,
-}
-
-impl From<&WeekOffset> for usize {
-    fn from(off: &WeekOffset) -> Self {
-        match off {
-            WeekOffset::First => 0,
-            WeekOffset::Second => 1,
-            WeekOffset::Third => 2,
-            WeekOffset::Fourth => 3,
-        }
-    }
-}
+pub type WeekOffset = i8; // -4...+5
 
 ///
 #[derive(Debug, PartialEq)]
@@ -53,9 +34,18 @@ impl Reminder {
     pub fn matches(&self, date: time::Date) -> bool {
         match self {
             Reminder::Weekly(wday) => date.weekday() == *wday,
-            Reminder::SemiWeekly(wday, off) => weekday::filter(date.year(), date.month(), *wday)
+            Reminder::SemiWeekly(wday, xoff) => weekday::filter(date.year(), date.month(), *wday)
                 .map(|wdays: Vec<time::Date>| -> bool {
-                    let idx: usize = off.into();
+                    let off = xoff - 1;
+                    let idx: usize = if off < 0 {
+                        wdays.len() - (off as usize)
+                    } else {
+                        off as usize
+                    };
+
+                    if idx >= wdays.len() {
+                        return false;
+                    }
                     wdays[idx] == date
                 })
                 .unwrap_or(false),
@@ -106,11 +96,11 @@ mod tests {
 
     #[test]
     fn match_semiweekly() {
-        let rem1 = Reminder::SemiWeekly(time::Weekday::Monday, WeekOffset::Second);
+        let rem1 = Reminder::SemiWeekly(time::Weekday::Monday, 2);
         assert!(rem1.matches(date!(2023 - 02 - 13)));
         assert!(!rem1.matches(date!(2023 - 02 - 06)));
 
-        let rem2 = Reminder::SemiWeekly(time::Weekday::Sunday, WeekOffset::Fourth);
+        let rem2 = Reminder::SemiWeekly(time::Weekday::Sunday, 4);
         assert!(rem2.matches(date!(2023 - 02 - 26)));
         assert!(!rem2.matches(date!(2023 - 02 - 05)));
     }
