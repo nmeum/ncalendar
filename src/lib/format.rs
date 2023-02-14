@@ -43,20 +43,20 @@ fn parse_month_str(input: &str) -> IResult<&str, time::Month> {
 }
 
 fn parse_month_num(input: &str) -> IResult<&str, time::Month> {
-    map_res(digits, |n| -> Result<time::Month, time::error::ComponentRange> {
-        // XXX: If there is a u32 → u8 conversion error then use 0xff
-        // as the month value which will result in a ComponentRange error.
-        // Unfourtunately, can't create a ComponentRange directly and use .map_err().
-        let m: u8 = n.try_into().unwrap_or(0xff);
-        time::Month::try_from(m)
-    })(input)
+    map_res(
+        digits,
+        |n| -> Result<time::Month, time::error::ComponentRange> {
+            // XXX: If there is a u32 → u8 conversion error then use 0xff
+            // as the month value which will result in a ComponentRange error.
+            // Unfourtunately, can't create a ComponentRange directly and use .map_err().
+            let m: u8 = n.try_into().unwrap_or(0xff);
+            time::Month::try_from(m)
+        },
+    )(input)
 }
 
 fn parse_month(input: &str) -> IResult<&str, time::Month> {
-    alt((
-        parse_month_str,
-        parse_month_num,
-    ))(input)
+    alt((parse_month_str, parse_month_num))(input)
 }
 
 fn parse_day(input: &str) -> IResult<&str, Day> {
@@ -122,9 +122,9 @@ pub fn parse_entries(input: &str) -> IResult<&str, Vec<Entry>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::Err;
     use nom::error::Error;
     use nom::error::ErrorKind;
+    use nom::Err;
     use time::macros::date;
 
     #[test]
@@ -139,8 +139,14 @@ mod tests {
         assert_eq!(parse_month("April"), Ok(("", time::Month::April)));
         assert_eq!(parse_month("04"), Ok(("", time::Month::April)));
         assert_eq!(parse_month("4"), Ok(("", time::Month::April)));
-        assert_eq!(parse_month("13"), Err(Err::Error(Error::new("13", ErrorKind::MapRes))));
-        assert_eq!(parse_month("2342"), Err(Err::Error(Error::new("2342", ErrorKind::MapRes))));
+        assert_eq!(
+            parse_month("13"),
+            Err(Err::Error(Error::new("13", ErrorKind::MapRes)))
+        );
+        assert_eq!(
+            parse_month("2342"),
+            Err(Err::Error(Error::new("2342", ErrorKind::MapRes)))
+        );
     }
 
     #[test]
