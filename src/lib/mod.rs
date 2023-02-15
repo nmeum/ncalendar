@@ -101,7 +101,13 @@ impl Reminder {
         match self {
             Reminder::Weekly(wday) => date.weekday() == *wday,
             Reminder::SemiWeekly(wday, off) => weekday::filter(date.year(), date.month(), *wday)
-                .map(|wdays| off.get(wdays) == Some(date))
+                .map(|wdays| -> bool {
+                    if date.weekday() != *wday {
+                        false
+                    } else {
+                        off.get(wdays) == Some(date)
+                    }
+                })
                 .unwrap_or(false),
             Reminder::Monthly(day, year) => {
                 date.day() == *day && year.map(|y| date.year() == y).unwrap_or(true)
