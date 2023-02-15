@@ -52,9 +52,8 @@ mod tests {
     use time::macros::date;
 
     #[test]
-    fn iterate_five() {
-        let it = iterator(2023, time::Month::January, time::Weekday::Monday).unwrap();
-        let mondays: Vec<time::Date> = it.collect();
+    fn filter_five() {
+        let mondays = filter(2023, time::Month::January, time::Weekday::Monday).unwrap();
         assert_eq!(
             mondays,
             vec![
@@ -68,9 +67,8 @@ mod tests {
     }
 
     #[test]
-    fn iterate_four() {
-        let it = iterator(2023, time::Month::February, time::Weekday::Monday).unwrap();
-        let mondays: Vec<time::Date> = it.collect();
+    fn filter_four() {
+        let mondays = filter(2023, time::Month::February, time::Weekday::Monday).unwrap();
         assert_eq!(
             mondays,
             vec![
