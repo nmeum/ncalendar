@@ -5,7 +5,7 @@ use nom::{
     combinator::{map_res, recognize},
     error::{FromExternalError, ParseError},
     multi::{many0, many1},
-    sequence::delimited,
+    sequence::{delimited, tuple},
     IResult,
 };
 
@@ -23,6 +23,15 @@ pub fn digits(input: &str) -> IResult<&str, u32> {
     map_res(recognize(many1(one_of("0123456789"))), |input: &str| {
         u32::from_str_radix(input, 10)
     })(input)
+}
+
+// Like nom::character::complete::i8 but unconditionally
+// requires an explicit `+` or `-` in the input string.
+pub fn i8_with_sign(input: &str) -> IResult<&str, i8> {
+    map_res(
+        tuple((one_of("+-"), recognize(many1(one_of("0123456789"))))),
+        |(sign, input)| i8::from_str_radix(&(sign.to_string()+input), 10)
+    )(input)
 }
 
 pub fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(

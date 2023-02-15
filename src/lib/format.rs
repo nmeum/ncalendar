@@ -26,10 +26,7 @@ fn parse_weekday(input: &str) -> IResult<&str, time::Weekday> {
 }
 
 fn parse_offset(input: &str) -> IResult<&str, WeekOffset> {
-    map_res(
-        nom::character::complete::i8,
-        |n| n.try_into(),
-    )(input)
+    map_res(i8_with_sign, |n| n.try_into())(input)
 }
 
 fn parse_month_str(input: &str) -> IResult<&str, time::Month> {
