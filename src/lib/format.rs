@@ -11,11 +11,6 @@ use nom::{
 };
 use std::num::TryFromIntError;
 
-pub enum OffsetError {
-    OutOfBounds,
-    ZeroValue,
-}
-
 ////////////////////////////////////////////////////////////////////////
 
 fn parse_weekday(input: &str) -> IResult<&str, time::Weekday> {
@@ -30,18 +25,10 @@ fn parse_weekday(input: &str) -> IResult<&str, time::Weekday> {
     ))(input)
 }
 
-fn parse_offset(input: &str) -> IResult<&str, i8> {
+fn parse_offset(input: &str) -> IResult<&str, WeekOffset> {
     map_res(
         nom::character::complete::i8,
-        |n| -> Result<i8, OffsetError> {
-            if !(n >= -4 && n <= 5) {
-                Err(OffsetError::OutOfBounds)
-            } else if n == 0 {
-                Err(OffsetError::ZeroValue)
-            } else {
-                Ok(n)
-            }
-        },
+        |n| n.try_into(),
     )(input)
 }
 
@@ -185,11 +172,11 @@ mod tests {
         );
         assert_eq!(
             parse_reminder("Fri+2"),
-            Ok(("", Reminder::SemiWeekly(time::Weekday::Friday, 2))),
+            Ok(("", Reminder::SemiWeekly(time::Weekday::Friday, 2i8.try_into().unwrap()))),
         );
         assert_eq!(
             parse_reminder("Mon-4"),
-            Ok(("", Reminder::SemiWeekly(time::Weekday::Monday, -4))),
+            Ok(("", Reminder::SemiWeekly(time::Weekday::Monday, (-4i8).try_into().unwrap()))),
         );
         assert_eq!(
             parse_reminder("Jan 1990"),
