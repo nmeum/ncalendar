@@ -5,7 +5,7 @@ This is an implementation of the `calendar(1)` program as available on [many][op
 ## Status
 
 This is mostly intended as a toy project for experimenting a bit with Rust.
-The implementation is primarily inspired by the [OpenBSD `calendar(1)` implementation](https://man.openbsd.org/calendar) and implements most of its feature.
+The implementation is primarily inspired by the [OpenBSD `calendar(1)` implementation][openbsd calendar] and implements most of its feature.
 However, the input format is not intended to be fully compatible with OpenBSD.
 
 ## Features
