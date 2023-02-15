@@ -53,14 +53,12 @@ fn main() {
     .unwrap();
 
     let out_fmt = format_description::parse("[month repr:short] [day]").unwrap();
-    let mut entries = ncalendar::parse_file(opt.file.as_path()).unwrap();
+    let entries = ncalendar::parse_file(opt.file.as_path()).unwrap();
 
     for date in span.iter() {
-        let (matched, remaning): (Vec<_>, Vec<_>) = entries
-            .into_iter() // TODO: use .iter() here to avoid copy
-            .partition(|e| e.day.matches(date));
+        let matched = entries.iter().filter(|e| e.day.matches(date));
 
-        matched.iter().for_each(|entry| {
+        matched.for_each(|entry| {
             let postfix = if entry.is_fixed() { ' ' } else { '*' };
 
             if opt.week {
@@ -73,10 +71,5 @@ fn main() {
                 entry.desc
             );
         });
-
-        entries = remaning;
-        if entries.is_empty() {
-            break;
-        }
     }
 }
