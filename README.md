@@ -44,11 +44,10 @@ The program is best invoked from a daily user-level cronjob.
 
 ## Test
 
-Due to [limitations of the time crate][time crate threads] this test suite can only be executed in a single threaded environment:
+Unit tests can be executed using the following command:
 
-    $ RUST_TEST_THREADS=1 cargo test
+    $ cargo test
 
-Unfortunately, this option [can't be enabled via the Cargo.toml][cargo defopts] configuration file.
 
 ## License
 
@@ -68,7 +67,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 [openbsd calendar]: https://man.openbsd.org/calendar
 [freebsd calendar]: https://www.freebsd.org/cgi/man.cgi?query=calendar
 [netbsd calendar]: https://man.netbsd.org/calendar.1
-[time crate threads]: https://github.com/time-rs/time/issues/538
-[cargo defopts]: https://github.com/rust-lang/cargo/issues/8430
 [parser combinators wk]: https://en.wikipedia.org/wiki/Parser_combinator
 [openbsd ostern.c]: https://github.com/openbsd/src/blob/47f32dc2b6cade03c63e7f98f4f715cb45238c6e/usr.bin/calendar/ostern.c
