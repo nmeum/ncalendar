@@ -1,6 +1,3 @@
-* Support relative "addressing", e.g.:
-    * Last Saturday of the month
-    * First Monday of the month
 * Improve error handling
     * Don't use unwrap everywhere in binary?
 * Implement the OpenBSD's `-a` flag

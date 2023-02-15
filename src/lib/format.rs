@@ -11,6 +11,11 @@ use nom::{
 };
 use std::num::TryFromIntError;
 
+pub enum OffsetError {
+    OutOfBounds,
+    ZeroValue,
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 fn parse_weekday(input: &str) -> IResult<&str, time::Weekday> {
@@ -23,6 +28,21 @@ fn parse_weekday(input: &str) -> IResult<&str, time::Weekday> {
         bind("Saturday", "Sat", time::Weekday::Saturday),
         bind("Sunday", "Sun", time::Weekday::Sunday),
     ))(input)
+}
+
+fn parse_offset(input: &str) -> IResult<&str, i8> {
+    map_res(
+        nom::character::complete::i8,
+        |n| -> Result<i8, OffsetError> {
+            if !(n >= -4 && n <= 5) {
+                Err(OffsetError::OutOfBounds)
+            } else if n == 0 {
+                Err(OffsetError::ZeroValue)
+            } else {
+                Ok(n)
+            }
+        },
+    )(input)
 }
 
 fn parse_month_str(input: &str) -> IResult<&str, time::Month> {
@@ -71,6 +91,10 @@ fn parse_year(input: &str) -> IResult<&str, Year> {
 
 fn parse_reminder(input: &str) -> IResult<&str, Reminder> {
     alt((
+        map_res(
+            tuple((parse_weekday, parse_offset)),
+            |(wday, off)| -> Result<Reminder, ()> { Ok(Reminder::SemiWeekly(wday, off)) },
+        ),
         map_res(parse_weekday, |wday| -> Result<Reminder, ()> {
             Ok(Reminder::Weekly(wday))
         }),
@@ -158,6 +182,14 @@ mod tests {
         assert_eq!(
             parse_reminder("Fri"),
             Ok(("", Reminder::Weekly(time::Weekday::Friday)))
+        );
+        assert_eq!(
+            parse_reminder("Fri+2"),
+            Ok(("", Reminder::SemiWeekly(time::Weekday::Friday, 2))),
+        );
+        assert_eq!(
+            parse_reminder("Mon-4"),
+            Ok(("", Reminder::SemiWeekly(time::Weekday::Monday, -4))),
         );
         assert_eq!(
             parse_reminder("Jan 1990"),

@@ -5,6 +5,7 @@ mod cpp;
 pub mod error;
 mod format;
 mod util;
+mod weekday;
 
 use std::convert;
 use std::path;
@@ -17,11 +18,13 @@ use crate::format::*;
 ///
 pub type Day = u8; // Day of the month
 pub type Year = i32;
+pub type WeekOffset = i8; // -4...+5
 
 ///
 #[derive(Debug, PartialEq)]
 pub enum Reminder {
     Weekly(time::Weekday),
+    SemiWeekly(time::Weekday, WeekOffset),
     Monthly(Day, Option<Year>),
     Yearly(Day, time::Month),
     Date(time::Date),
@@ -31,6 +34,21 @@ impl Reminder {
     pub fn matches(&self, date: time::Date) -> bool {
         match self {
             Reminder::Weekly(wday) => date.weekday() == *wday,
+            Reminder::SemiWeekly(wday, xoff) => weekday::filter(date.year(), date.month(), *wday)
+                .map(|wdays: Vec<time::Date>| -> bool {
+                    let off = xoff - 1;
+                    let idx: usize = if off < 0 {
+                        wdays.len() - (off as usize)
+                    } else {
+                        off as usize
+                    };
+
+                    if idx >= wdays.len() {
+                        return false;
+                    }
+                    wdays[idx] == date
+                })
+                .unwrap_or(false),
             Reminder::Monthly(day, year) => {
                 date.day() == *day && year.map(|y| date.year() == y).unwrap_or(true)
             }
@@ -51,7 +69,7 @@ pub struct Entry {
 impl Entry {
     pub fn is_fixed(&self) -> bool {
         match self.day {
-            Reminder::Weekly(_) | Reminder::Monthly(_, _) => false,
+            Reminder::SemiWeekly(_, _) | Reminder::Weekly(_) | Reminder::Monthly(_, _) => false,
             _ => true,
         }
     }
@@ -66,5 +84,24 @@ pub fn parse_file<'a, P: convert::AsRef<path::Path>>(fp: P) -> Result<Vec<Entry>
         Err(Error::IncompleteParse)
     } else {
         Ok(entries)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time::macros::date;
+
+    #[test]
+    fn match_semiweekly() {
+        let rem1 = Reminder::SemiWeekly(time::Weekday::Monday, 2);
+        assert!(rem1.matches(date!(2023 - 02 - 13)));
+        assert!(!rem1.matches(date!(2023 - 02 - 06)));
+
+        let rem2 = Reminder::SemiWeekly(time::Weekday::Sunday, 4);
+        assert!(rem2.matches(date!(2023 - 02 - 26)));
+        assert!(!rem2.matches(date!(2023 - 02 - 05)));
     }
 }
