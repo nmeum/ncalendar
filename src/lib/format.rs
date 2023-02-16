@@ -3,7 +3,8 @@ use crate::*;
 
 use nom::{
     branch::alt,
-    character::complete::{char, line_ending, not_line_ending},
+    bytes::complete::tag,
+    character::complete::{char, line_ending, not_line_ending, one_of},
     combinator::{map_res, opt},
     multi::many0,
     sequence::{preceded, terminated, tuple},
@@ -15,34 +16,49 @@ use std::num::TryFromIntError;
 
 fn parse_weekday(input: &str) -> IResult<&str, time::Weekday> {
     alt((
-        bind("Monday", "Mon", time::Weekday::Monday),
-        bind("Tuesday", "Tue", time::Weekday::Tuesday),
-        bind("Wednesday", "Wed", time::Weekday::Wednesday),
-        bind("Thursday", "Thu", time::Weekday::Thursday),
-        bind("Friday", "Fri", time::Weekday::Friday),
-        bind("Saturday", "Sat", time::Weekday::Saturday),
-        bind("Sunday", "Sun", time::Weekday::Sunday),
+        str("Monday", "Mon", time::Weekday::Monday),
+        str("Tuesday", "Tue", time::Weekday::Tuesday),
+        str("Wednesday", "Wed", time::Weekday::Wednesday),
+        str("Thursday", "Thu", time::Weekday::Thursday),
+        str("Friday", "Fri", time::Weekday::Friday),
+        str("Saturday", "Sat", time::Weekday::Saturday),
+        str("Sunday", "Sun", time::Weekday::Sunday),
     ))(input)
 }
 
 fn parse_offset(input: &str) -> IResult<&str, WeekOffset> {
-    map_res(i8_with_sign, |n| n.try_into())(input)
+    let (input, prefix) = one_of("+-")(input)?;
+    let (input, amount) = alt((
+        bind(tag("1"), WeekOffsetAmount::First),
+        bind(tag("2"), WeekOffsetAmount::Second),
+        bind(tag("3"), WeekOffsetAmount::Third),
+        bind(tag("4"), WeekOffsetAmount::Fourth),
+        bind(tag("5"), WeekOffsetAmount::Fifth),
+    ))(input)?;
+
+    Ok((
+        input,
+        WeekOffset {
+            from_start: prefix == '+',
+            amount: amount,
+        },
+    ))
 }
 
 fn parse_month_str(input: &str) -> IResult<&str, time::Month> {
     alt((
-        bind("January", "Jan", time::Month::January),
-        bind("February", "Feb", time::Month::February),
-        bind("March", "Mar", time::Month::March),
-        bind("April", "Apr", time::Month::April),
-        bind("May", "May", time::Month::May),
-        bind("June", "Jun", time::Month::June),
-        bind("July", "Jul", time::Month::July),
-        bind("August", "Aug", time::Month::August),
-        bind("September", "Sep", time::Month::September),
-        bind("October", "Oct", time::Month::October),
-        bind("November", "Nov", time::Month::November),
-        bind("December", "Dec", time::Month::December),
+        str("January", "Jan", time::Month::January),
+        str("February", "Feb", time::Month::February),
+        str("March", "Mar", time::Month::March),
+        str("April", "Apr", time::Month::April),
+        str("May", "May", time::Month::May),
+        str("June", "Jun", time::Month::June),
+        str("July", "Jul", time::Month::July),
+        str("August", "Aug", time::Month::August),
+        str("September", "Sep", time::Month::September),
+        str("October", "Oct", time::Month::October),
+        str("November", "Nov", time::Month::November),
+        str("December", "Dec", time::Month::December),
     ))(input)
 }
 
@@ -169,11 +185,17 @@ mod tests {
         );
         assert_eq!(
             parse_reminder("Fri+2"),
-            Ok(("", Reminder::SemiWeekly(time::Weekday::Friday, 2i8.try_into().unwrap()))),
+            Ok((
+                "",
+                Reminder::SemiWeekly(time::Weekday::Friday, 2i8.try_into().unwrap())
+            )),
         );
         assert_eq!(
             parse_reminder("Mon-4"),
-            Ok(("", Reminder::SemiWeekly(time::Weekday::Monday, (-4i8).try_into().unwrap()))),
+            Ok((
+                "",
+                Reminder::SemiWeekly(time::Weekday::Monday, (-4i8).try_into().unwrap())
+            )),
         );
         assert_eq!(
             parse_reminder("Jan 1990"),
