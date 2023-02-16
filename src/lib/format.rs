@@ -3,7 +3,6 @@ use crate::*;
 
 use nom::{
     branch::alt,
-    bytes::complete::tag,
     character::complete::{char, line_ending, not_line_ending, one_of},
     combinator::{map_res, opt},
     multi::many0,
@@ -29,11 +28,11 @@ fn parse_weekday(input: &str) -> IResult<&str, time::Weekday> {
 fn parse_offset(input: &str) -> IResult<&str, WeekOffset> {
     let (input, prefix) = one_of("+-")(input)?;
     let (input, amount) = alt((
-        bind(tag("1"), WeekOffsetAmount::First),
-        bind(tag("2"), WeekOffsetAmount::Second),
-        bind(tag("3"), WeekOffsetAmount::Third),
-        bind(tag("4"), WeekOffsetAmount::Fourth),
-        bind(tag("5"), WeekOffsetAmount::Fifth),
+        bind(char('1'), WeekOffsetAmount::First),
+        bind(char('2'), WeekOffsetAmount::Second),
+        bind(char('3'), WeekOffsetAmount::Third),
+        bind(char('4'), WeekOffsetAmount::Fourth),
+        bind(char('5'), WeekOffsetAmount::Fifth),
     ))(input)?;
 
     Ok((
